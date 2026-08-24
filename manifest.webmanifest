@@ -1,7 +1,7 @@
 {
   "name": "IELTS Learning Manager",
   "short_name": "IELTS Learning",
-  "start_url": "./index.html?v=8",
+  "start_url": "./index.html?v=9",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f6f7fb",
@@ -19,5 +19,5 @@
       "type": "image/png"
     }
   ],
-  "id": "./index.html?v=8"
+  "id": "./index.html?v=9"
 }
