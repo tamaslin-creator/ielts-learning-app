@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ielts-learning-stable-v9';
+const CACHE_NAME = 'ielts-learning-stable-v10';
 const STATIC_ASSETS = ['./manifest.webmanifest','./icon-192.png','./icon-512.png'];
 self.addEventListener('install', event => {
   self.skipWaiting();
