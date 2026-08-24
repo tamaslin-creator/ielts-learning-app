@@ -2,92 +2,266 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IELTS Manager">
 <meta name="theme-color" content="#111827">
-<link rel="manifest" href="manifest.webmanifest">
+<link rel="manifest" href="manifest.webmanifest?v=8">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>IELTS Learning</title>
 <style>
-:root{--bg:#f6f7fb;--card:#fff;--ink:#111827;--muted:#667085;--blue:#2563eb;--green:#16a34a;--red:#dc2626;--line:#e5e7eb;--soft:#eef2ff}
+:root{--bg:#f5f7fb;--card:#fff;--ink:#111827;--muted:#64748b;--blue:#2563eb;--green:#16a34a;--amber:#d97706;--border:#e5e7eb}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;color:var(--ink);padding-bottom:92px}
-header{background:#111827;color:#fff;padding:calc(18px + env(safe-area-inset-top)) 18px 18px}
-header h1{margin:0 0 6px;font-size:30px} header p{margin:0;color:#cbd5e1;font-size:14px}
-main{padding:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;margin-bottom:14px;box-shadow:0 4px 16px rgba(15,23,42,.04)}
-.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.badge{background:#dbeafe;color:#1d4ed8;font-size:12px;font-weight:800;padding:7px 10px;border-radius:999px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.kpi{background:#fff;border:1px solid var(--line);border-radius:16px;padding:13px}.kpi small{color:var(--muted)}.kpi strong{display:block;font-size:24px;margin-top:5px}
-.task{display:grid;grid-template-columns:40px 1fr 36px;gap:10px;align-items:center;padding:14px 0;border-bottom:1px solid #eef0f2;cursor:pointer}.task:last-child{border-bottom:0}.ico{width:38px;height:38px;border-radius:12px;background:var(--soft);display:grid;place-items:center;font-size:18px}.task b{display:block;font-size:16px}.task small{display:block;color:var(--muted);font-size:13px;margin-top:3px}.go{width:30px;height:30px;border-radius:50%;background:#eff6ff;color:#2563eb;display:grid;place-items:center;font-weight:900}.task.done .go{background:#dcfce7;color:#15803d}
-label{display:block;color:var(--muted);font-size:13px;margin:12px 0 6px}input,textarea{width:100%;font:inherit;font-size:16px;padding:14px;border:1.5px solid #94a3b8;border-radius:14px;background:#fff;color:var(--ink)}textarea{min-height:100px;resize:vertical}.btn{width:100%;border:0;border-radius:14px;background:var(--blue);color:#fff;padding:14px;font-size:16px;font-weight:800}.btn.secondary{background:#eef2ff;color:#1d4ed8}.hint{color:var(--muted);font-size:13px;line-height:1.55}
-.view{display:none}.view.active{display:block}.nav{position:fixed;bottom:0;left:0;right:0;z-index:30;display:grid;grid-template-columns:repeat(4,1fr);background:rgba(255,255,255,.98);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}.nav button{border:0;background:transparent;color:#667085;padding:10px 2px;font-size:12px}.nav button.active{color:var(--blue);font-weight:800}
-.score-row{display:grid;grid-template-columns:1fr 120px;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid #eef0f2}.score-row input{text-align:center;font-weight:800;background:#f8fafc}.plan-item{padding:12px 0;border-bottom:1px solid #eef0f2}.plan-item small{color:var(--muted)}
-.modal{position:fixed;inset:0;background:rgba(15,23,42,.48);z-index:60;display:none;align-items:flex-end}.modal.show{display:flex}.sheet{width:100%;max-height:88vh;overflow:auto;background:#fff;border-radius:24px 24px 0 0;padding:20px 18px calc(24px + env(safe-area-inset-bottom))}.close{width:38px;height:38px;border:0;border-radius:50%;background:#f1f5f9;font-size:22px}.q{padding:12px 0;border-bottom:1px solid #eef0f2}.choice{display:block;width:100%;text-align:left;background:#fff;color:#111827;border:1px solid #cbd5e1;border-radius:12px;padding:11px;margin:7px 0}.choice.correct{background:#dcfce7;border-color:#16a34a}.choice.wrong{background:#fee2e2;border-color:#dc2626}.timer{font-size:48px;font-weight:800;text-align:center;padding:16px}.flash{font-size:30px;font-weight:800;text-align:center;padding:34px 12px}.result{font-weight:800;margin:12px 0}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;color:var(--ink);padding-bottom:94px}
+header{background:#111827;color:#fff;padding:calc(22px + env(safe-area-inset-top)) 18px 18px}
+header h1{margin:0 0 5px;font-size:30px} header p{margin:0;color:#cbd5e1}
+main{padding:14px}
+.card{background:#fff;border:1px solid var(--border);border-radius:22px;padding:17px;margin-bottom:14px;box-shadow:0 4px 15px rgba(15,23,42,.04)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.badge{background:#dbeafe;color:#1d4ed8;padding:7px 11px;border-radius:999px;font-size:12px;font-weight:800}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{background:#fff;border:1px solid var(--border);border-radius:18px;padding:14px}
+.kpi small,.hint,label{color:var(--muted)} .kpi strong{display:block;font-size:25px;margin-top:4px}
+.breakdown{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.stat{border:1px solid var(--border);border-radius:15px;padding:12px;background:#fafcff}
+.stat small{display:block;color:var(--muted);font-size:12px} .stat b{display:block;font-size:20px;margin-top:3px}
+.task{display:grid;grid-template-columns:40px minmax(0,1fr) 38px;gap:11px;align-items:center;padding:14px 0;border-bottom:1px solid #eef0f3;cursor:pointer}
+.task:last-child{border:0} .ico{width:38px;height:38px;border-radius:12px;background:#eef2ff;display:grid;place-items:center;font-size:18px}
+.task b{display:block;font-size:16px} .task small{color:var(--muted);display:block;margin-top:3px}
+.go{width:31px;height:31px;border-radius:50%;background:#eff6ff;color:#2563eb;display:grid;place-items:center;font-weight:900}
+.task.done .go{background:#dcfce7;color:#16a34a}
+input,textarea{width:100%;font:inherit;font-size:16px;padding:14px;border:1.5px solid #94a3b8;border-radius:15px;background:#fff;color:var(--ink)}
+label{display:block;font-size:13px;margin:12px 0 6px} textarea{min-height:90px}
+.btn.danger{background:#dc2626;color:#fff}
+.btn.ghost{background:#fff;color:#111827;border:1.5px solid #cbd5e1}
+.settings-note{font-size:13px;color:#64748b;line-height:1.6}
+.reset-box{border:1px solid #fecaca;background:#fff7f7;border-radius:16px;padding:14px;margin-top:12px}
+.btn{width:100%;border:0;border-radius:15px;background:var(--blue);color:#fff;font-weight:800;font-size:17px;padding:15px}
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:20;display:grid;grid-template-columns:repeat(5,1fr);background:rgba(255,255,255,.97);border-top:1px solid var(--border);padding-bottom:env(safe-area-inset-bottom)}
+.nav button{border:0;background:transparent;color:#64748b;padding:10px 2px;font-size:12px} .nav button.active{color:#2563eb;font-weight:800}
+.view{display:none} .view.active{display:block}
+.score{display:grid;grid-template-columns:1fr 122px;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid #eef0f3}
+.score input{font-size:18px;font-weight:800;text-align:center;background:#f8fafc}
+.listitem{padding:12px 0;border-bottom:1px solid #eef0f3} .listitem small{color:var(--muted)}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.48);z-index:50;display:none;align-items:flex-end}
+.modal.show{display:flex} .sheet{width:100%;background:#fff;border-radius:24px 24px 0 0;padding:20px 18px calc(24px + env(safe-area-inset-bottom));max-height:82vh;overflow:auto}
+.close{width:38px;height:38px;border:0;border-radius:50%;font-size:22px;background:#f1f5f9}
+.notice{padding:10px 12px;border-radius:12px;background:#fff7ed;color:#9a3412;font-size:13px;line-height:1.5;margin-top:10px}
 </style>
 </head>
 <body>
 <header><h1>IELTS Learning</h1><p>TOEIC 基礎 → IELTS General CLB 7 → CLB 9</p></header>
 <main>
-<section id="home" class="view active">
+<section id="view-home" class="view active">
   <div class="grid2">
-    <div class="kpi"><small>今日完成</small><strong id="kpiTasks">0/6</strong></div>
-    <div class="kpi"><small>Backlog</small><strong id="kpiBacklog">0m</strong></div>
+    <div class="kpi"><small>今日完成</small><strong id="taskCount">0/6</strong></div>
+    <div class="kpi"><small>目前 Backlog</small><strong id="backlogNow">0m</strong></div>
   </div>
+
   <div class="card">
-    <div class="row"><div><small style="color:var(--muted)">今日任務</small><h2 id="homeDate" style="margin:4px 0 0">2026-09-01</h2></div><span id="homeMode" class="badge">TOEIC Foundation</span></div>
-    <p class="hint">點任何一科直接開始。完成該課後會自動打 ✓。</p>
-    <div id="homeTasks"></div>
-    <label for="actualMin">今天實際學習分鐘</label><input id="actualMin" type="number" inputmode="numeric" min="0" placeholder="例如 75">
-    <label for="catchupMin">今天補回 Backlog 分鐘</label><input id="catchupMin" type="number" inputmode="numeric" min="0" placeholder="例如 20">
-    <div style="height:10px"></div><button id="saveToday" class="btn">儲存今日紀錄</button>
+    <div class="row">
+      <div><small style="color:var(--muted)">今日任務</small><h2 id="homeDate" style="margin:4px 0 0">—</h2></div>
+      <span id="homeMode" class="badge">—</span>
+    </div>
+    <p class="hint">每日計畫量會依月份設定；未完成的學習量在當天結束後加入 Backlog。</p>
+    <div id="tasks"></div>
+
+    <label>今天「計畫內」實際學習分鐘</label>
+    <input id="actual" type="number" inputmode="numeric" min="0" placeholder="例如：20">
+    <label>今天補回「以前累積的 Backlog」分鐘</label>
+    <input id="catchup" type="number" inputmode="numeric" min="0" placeholder="只有已有 Backlog 時才能補">
+    <div class="notice" id="catchupHint">第一天沒有舊 Backlog，所以補課分鐘不會抵扣今天新產生的不足。</div>
+
+    <div class="breakdown">
+      <div class="stat"><small>今日目標</small><b id="targetMin">0m</b></div>
+      <div class="stat"><small>昨日 Backlog</small><b id="openingBacklog">0m</b></div>
+      <div class="stat"><small>今日不足</small><b id="todayGap">0m</b></div>
+      <div class="stat"><small>實際補回</small><b id="appliedCatchup">0m</b></div>
+    </div>
+
+    <button class="btn" id="saveToday">儲存今日紀錄</button>
   </div>
 </section>
-<section id="today" class="view">
-  <div class="card"><h2 style="margin-top:0">每日管理</h2><label for="datePicker">選擇日期</label><input id="datePicker" type="date" min="2026-09-01" max="2026-11-30"><div id="todayTasks"></div><label for="note">今日心得</label><textarea id="note" placeholder="今天學到什麼？哪裡卡住？"></textarea><div style="height:10px"></div><button id="saveNote" class="btn">儲存心得</button></div>
+
+<section id="view-today" class="view">
+  <div class="card">
+    <h2>每日管理</h2>
+    <label>選擇日期</label><input type="date" id="datePicker" min="2026-09-01" max="2026-11-30">
+    <div id="todayTasks"></div>
+    <label>今日心得</label><textarea id="note"></textarea>
+    <button class="btn" id="saveNote">儲存心得</button>
+  </div>
 </section>
-<section id="plan" class="view"><div class="card"><h2 style="margin-top:0">91 天計畫</h2><div id="planList"></div></div></section>
-<section id="clb" class="view"><div class="card"><h2 style="margin-top:0">CLB 進度</h2><p class="hint">輸入最新 IELTS General 模考分數。</p><div id="scoreList"></div><button id="saveScores" class="btn">儲存分數</button></div><div class="card"><b>CLB 7</b><p>L 6.0 • R 6.0 • W 6.0 • S 6.0</p><b>CLB 9</b><p>L 8.0 • R 7.0 • W 7.0 • S 7.0</p></div></section>
+
+<section id="view-plan" class="view"><div class="card"><h2>91 天計畫</h2><div id="planList"></div></div></section>
+
+<section id="view-clb" class="view">
+  <div class="card"><h2>CLB 進度</h2><p class="hint">輸入最新 IELTS General 模考分數。</p><div id="scores"></div><button class="btn" id="saveScores">儲存分數</button></div>
+  <div class="card"><b>CLB 7</b><p>L 6.0 • R 6.0 • W 6.0 • S 6.0</p><b>CLB 9</b><p>L 8.0 • R 7.0 • W 7.0 • S 7.0</p></div>
+</section>
+
+<section id="view-settings" class="view">
+  <div class="card">
+    <h2 style="margin-top:0">⚙️ 設定</h2>
+    <p class="settings-note">這裡只管理這支 iPhone 上的學習紀錄。GitHub 上的 App 程式不會被刪除。</p>
+
+    <div class="reset-box">
+      <b style="color:#b91c1c">清除所有測試資料</b>
+      <p class="settings-note">會清除：學習分鐘、Backlog、任務完成勾選、CLB 模考分數、每日心得。91 天課表本身不會被刪除。</p>
+      <button class="btn danger" id="resetAllData">清除所有測試資料</button>
+    </div>
+
+    <div style="height:12px"></div>
+    <div class="card" style="margin:0;background:#f8fafc;box-shadow:none">
+      <b>目前本機資料</b>
+      <p class="settings-note" id="storageSummary">尚未讀取</p>
+    </div>
+  </div>
+</section>
+
 </main>
-<nav class="nav"><button class="active" data-view="home">🏠<br>首頁</button><button data-view="today">✅<br>今日</button><button data-view="plan">📅<br>計畫</button><button data-view="clb">🎯<br>CLB</button></nav>
-<div id="modal" class="modal"><div class="sheet"><div class="row"><h2 id="lessonTitle" style="margin:0">Lesson</h2><button id="closeModal" class="close">×</button></div><div id="lessonBody"></div></div></div>
+
+<nav class="nav">
+<button class="active" data-v="home">🏠<br>首頁</button>
+<button data-v="today">✅<br>今日</button>
+<button data-v="plan">📅<br>計畫</button>
+<button data-v="clb">🎯<br>CLB</button>
+<button data-v="settings">⚙️<br>設定</button>
+</nav>
+
+<div class="modal" id="modal"><div class="sheet"><div class="row"><h2 id="lessonTitle" style="margin:0"></h2><button class="close" id="close">×</button></div><p id="lessonBody" style="font-size:17px;line-height:1.7"></p><button class="btn" id="completeTask">完成此項</button></div></div>
+
 <script>
 (function(){
-'use strict';
-var START='2026-09-01', END='2026-11-30', STORAGE='ielts_stable_v1';
-var taskKeys=['grammar','listening','reading','writing','speaking','vocabulary'];
-var labels={grammar:'Grammar',listening:'Listening',reading:'Reading',writing:'Writing',speaking:'Speaking',vocabulary:'Vocabulary'};
-var icons={grammar:'Aa',listening:'🎧',reading:'📖',writing:'✍️',speaking:'🎤',vocabulary:'🧠'};
-function $(id){return document.getElementById(id)}
-function parseDate(s){var a=s.split('-');return new Date(Number(a[0]),Number(a[1])-1,Number(a[2]))}
-function fmt(d){var m=d.getMonth()+1,day=d.getDate();return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(day<10?'0':'')+day}
-function makePlan(){var out=[],d=parseDate(START),i=0;while(d<=parseDate(END)){var month=d.getMonth()+1,p={date:fmt(d)};if(month===9){p.mode='TOEIC Foundation';p.target=75;p.grammar=['is / are / was / were','Present vs. Past','3rd-person -s','to + Verb','Active vs. Passive','on / at / by'][i%6];p.listening=['Workplace sentences','Numbers / Time / Dates','Meetings & Schedules','Factory instructions'][i%4];p.reading=['Short notice','Email','Schedule / Table','Workplace memo'][i%4];p.writing='Write 3 simple work sentences';p.speaking='Speak for 60 seconds';p.vocabulary='10 TOEIC workplace words'}else if(month===10){p.mode='TOEIC → IELTS';p.target=90;p.grammar='Grammar review';p.listening='IELTS General listening practice';p.reading='IELTS General workplace reading';p.writing='Task 1 short letter';p.speaking='Speaking Part 1';p.vocabulary='10 IELTS General words'}else{p.mode='IELTS CLB 7';p.target=95;p.grammar='Error correction';p.listening='Timed listening set';p.reading='Timed General Reading';p.writing='Task 1 / Task 2 practice';p.speaking='IELTS speaking practice';p.vocabulary='Error-log vocabulary'}out.push(p);d.setDate(d.getDate()+1);i++}return out}
-var plans=makePlan();
-var state;try{state=JSON.parse(localStorage.getItem(STORAGE)||'{"days":{},"scores":{}}')}catch(e){state={days:{},scores:{}}}if(!state.days)state.days={};if(!state.scores)state.scores={};
-function save(){localStorage.setItem(STORAGE,JSON.stringify(state))}
-function planFor(date){for(var i=0;i<plans.length;i++)if(plans[i].date===date)return plans[i];return plans[0]}
-function currentPlan(){var t=fmt(new Date());if(t<START)return plans[0];if(t>END)return plans[plans.length-1];return planFor(t)}
-function dayFor(date){if(!state.days[date])state.days[date]={tasks:{},actual:0,catchup:0,note:'',writing:''};if(!state.days[date].tasks)state.days[date].tasks={};return state.days[date]}
-function backlog(){var b=0;for(var i=0;i<plans.length;i++){var x=state.days[plans[i].date];if(x){b=Math.max(0,b+Math.max(0,plans[i].target-(Number(x.actual)||0))-(Number(x.catchup)||0))}}return b}
-function renderTaskList(container,p){container.innerHTML='';var x=dayFor(p.date);for(var i=0;i<taskKeys.length;i++){(function(k){var el=document.createElement('div');el.className='task'+(x.tasks[k]?' done':'');el.innerHTML='<div class="ico">'+icons[k]+'</div><div><b>'+labels[k]+'</b><small>'+p[k]+'</small></div><div class="go">'+(x.tasks[k]?'✓':'›')+'</div>';el.addEventListener('click',function(){openLesson(p.date,k)});container.appendChild(el)})(taskKeys[i])}}
-function renderHome(){var p=currentPlan(),x=dayFor(p.date);$('homeDate').textContent=p.date;$('homeMode').textContent=p.mode;renderTaskList($('homeTasks'),p);$('actualMin').value=x.actual||'';$('catchupMin').value=x.catchup||'';var c=0;for(var i=0;i<taskKeys.length;i++)if(x.tasks[taskKeys[i]])c++;$('kpiTasks').textContent=c+'/6';$('kpiBacklog').textContent=backlog()+'m'}
-function renderToday(date){var p=planFor(date),x=dayFor(p.date);$('datePicker').value=p.date;renderTaskList($('todayTasks'),p);$('note').value=x.note||''}
-function renderPlan(){var box=$('planList');box.innerHTML='';for(var i=0;i<plans.length;i++){var d=document.createElement('div');d.className='plan-item';d.innerHTML='<b>'+plans[i].date+'</b><br><small>'+plans[i].mode+' • '+plans[i].grammar+' • '+plans[i].listening+'</small>';box.appendChild(d)}}
-function renderScores(){var t={Listening:[6,8],Reading:[6,7],Writing:[6,7],Speaking:[6,7]},box=$('scoreList');box.innerHTML='';for(var k in t){var row=document.createElement('div');row.className='score-row';row.innerHTML='<div><b>'+k+'</b><br><small>CLB7 '+t[k][0]+' • CLB9 '+t[k][1]+'</small></div><input type="number" inputmode="decimal" step="0.5" min="0" max="9" id="score-'+k+'" placeholder="6.0">';box.appendChild(row);$('score-'+k).value=state.scores[k]||''}}
-function complete(date,k){dayFor(date).tasks[k]=true;save();renderAll();closeLesson()}
-function closeLesson(){$('modal').classList.remove('show')}
-function showLesson(title,html){$('lessonTitle').textContent=title;$('lessonBody').innerHTML=html;$('modal').classList.add('show')}
-function openLesson(date,k){var p=planFor(date);if(k==='grammar'){openGrammar(date,p);return}if(k==='listening'){openListening(date);return}if(k==='reading'){showLesson('Reading','<p><b>Notice</b></p><p>The installation was scheduled for Monday. Because several parts have not arrived, it will begin on Thursday.</p><div class="q"><b>Why was the installation delayed?</b><p>A. The factory was closed<br>B. Some parts had not arrived<br>C. The customer cancelled</p><p class="result">Answer: B</p></div><button id="finishReading" class="btn">完成 Reading</button>');$('finishReading').onclick=function(){complete(date,k)};return}if(k==='writing'){showLesson('Writing','<p>Write 3–5 sentences to a customer. Explain that machine installation is delayed by two days and give the new schedule.</p><textarea id="writingBox" placeholder="Write here..."></textarea><div style="height:10px"></div><button id="finishWriting" class="btn">儲存並完成 Writing</button>');$('writingBox').value=dayFor(date).writing||'';$('finishWriting').onclick=function(){dayFor(date).writing=$('writingBox').value;complete(date,k)};return}if(k==='speaking'){showLesson('Speaking','<p>Describe your job and one project you are responsible for. Speak for 60 seconds.</p><div id="timer" class="timer">60</div><button id="startTimer" class="btn secondary">開始 60 秒</button><div style="height:10px"></div><button id="finishSpeaking" class="btn">完成 Speaking</button>');$('startTimer').onclick=function(){var n=60;$('timer').textContent=n;var id=setInterval(function(){n--;$('timer').textContent=n;if(n<=0)clearInterval(id)},1000)};$('finishSpeaking').onclick=function(){complete(date,k)};return}if(k==='vocabulary'){openVocab(date);return}}
-function openGrammar(date,p){var qs=[['Our engineering team ___ responsible for the installation.',['are','is','be'],'is'],['The machine ___ installed yesterday.',['is','was','were'],'was'],['The engineers ___ the machine every day.',['checks','check','checked'],'check'],['We need ___ the project.',['finish','to finish','finished'],'to finish'],['Finish the report ___ Friday.',['on','at','by'],'by']];showLesson('Grammar','<p class="hint">請完成 5 題。</p><div id="quiz"></div><button id="finishGrammar" class="btn">完成 Grammar</button>');var qbox=$('quiz'),answered={};for(var i=0;i<qs.length;i++){(function(idx){var wrap=document.createElement('div');wrap.className='q';var h=document.createElement('b');h.textContent=(idx+1)+'. '+qs[idx][0];wrap.appendChild(h);for(var j=0;j<qs[idx][1].length;j++){(function(choice){var b=document.createElement('button');b.className='choice';b.textContent=choice;b.addEventListener('click',function(){if(answered[idx])return;answered[idx]=true;if(choice===qs[idx][2])b.classList.add('correct');else b.classList.add('wrong')});wrap.appendChild(b)})(qs[idx][1][j])}qbox.appendChild(wrap)})(i)}$('finishGrammar').onclick=function(){var count=0;for(var z in answered)if(answered[z])count++;if(count<5){alert('請先完成 5 題');return}complete(date,'grammar')}}
-function openListening(date){var items=[['The meeting has been moved to Thursday morning.','When is the meeting?','Thursday morning'],['Please send the updated drawing before five o’clock.','What should be sent?','The updated drawing'],['The machine will be installed next Monday.','When will the machine be installed?','Next Monday']];showLesson('Listening','<p class="hint">按播放，先聽再看答案。</p><div id="listenList"></div><button id="finishListening" class="btn">完成 Listening</button>');var box=$('listenList');for(var i=0;i<items.length;i++){(function(it,idx){var q=document.createElement('div');q.className='q';q.innerHTML='<button class="btn secondary">▶ 播放 '+(idx+1)+'</button><p><b>'+it[1]+'</b></p><details><summary>看答案</summary>'+it[2]+'</details>';q.querySelector('button').addEventListener('click',function(){if('speechSynthesis' in window){window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(it[0]);u.lang='en-US';u.rate=.85;window.speechSynthesis.speak(u)}else{alert('此瀏覽器不支援語音播放')}});box.appendChild(q)})(items[i],i)}$('finishListening').onclick=function(){complete(date,'listening')}}
-function openVocab(date){var words=[['deadline','截止期限'],['supplier','供應商'],['inspection','檢查'],['schedule','時程'],['approve','核准'],['install','安裝'],['production','生產'],['equipment','設備'],['delay','延誤'],['requirement','需求']],n=0,flip=false;showLesson('Vocabulary','<p class="hint">點「翻面」看中文。</p><div id="flash" class="flash"></div><button id="flipWord" class="btn secondary">翻面</button><div style="height:10px"></div><button id="nextWord" class="btn secondary">下一個</button><div style="height:10px"></div><button id="finishVocab" class="btn">完成 Vocabulary</button>');function show(){$('flash').textContent=flip?words[n][1]:words[n][0]}show();$('flipWord').onclick=function(){flip=!flip;show()};$('nextWord').onclick=function(){n=(n+1)%words.length;flip=false;show()};$('finishVocab').onclick=function(){complete(date,'vocabulary')}}
-function renderAll(){renderHome();renderToday($('datePicker').value||currentPlan().date);renderPlan();renderScores()}
-$('saveToday').addEventListener('click',function(){var p=currentPlan(),x=dayFor(p.date);x.actual=Number($('actualMin').value)||0;x.catchup=Number($('catchupMin').value)||0;save();renderAll();alert('今日紀錄已儲存')});$('saveNote').addEventListener('click',function(){var x=dayFor($('datePicker').value);x.note=$('note').value;save();alert('心得已儲存')});$('saveScores').addEventListener('click',function(){var a=['Listening','Reading','Writing','Speaking'];for(var i=0;i<a.length;i++)state.scores[a[i]]=$('score-'+a[i]).value;save();alert('CLB 分數已儲存')});$('datePicker').addEventListener('change',function(){renderToday(this.value)});$('closeModal').addEventListener('click',closeLesson);$('modal').addEventListener('click',function(e){if(e.target===this)closeLesson()});var nav=document.querySelectorAll('.nav button');for(var i=0;i<nav.length;i++){nav[i].addEventListener('click',function(){for(var j=0;j<nav.length;j++)nav[j].classList.remove('active');var views=document.querySelectorAll('.view');for(var k=0;k<views.length;k++)views[k].classList.remove('active');this.classList.add('active');$(this.getAttribute('data-view')).classList.add('active')})}
-renderAll();
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function(){
-    navigator.serviceWorker.register('./service-worker.js').catch(function(){});
-  });
+"use strict";
+const plans=[{"date": "2026-09-01", "mode": "TOEIC Foundation", "target": 75, "grammar": "is / are / was / were", "listening": "Workplace sentences", "reading": "Short notice", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-02", "mode": "TOEIC Foundation", "target": 75, "grammar": "Present vs. Past", "listening": "Numbers / Time / Dates", "reading": "Email", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-03", "mode": "TOEIC Foundation", "target": 75, "grammar": "3rd-person -s", "listening": "Meetings & Schedules", "reading": "Schedule / Table", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-04", "mode": "TOEIC Foundation", "target": 75, "grammar": "to + Verb", "listening": "Factory instructions", "reading": "Workplace memo", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-05", "mode": "TOEIC Foundation", "target": 75, "grammar": "Active vs. Passive", "listening": "Workplace sentences", "reading": "Short notice", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-06", "mode": "TOEIC Foundation", "target": 75, "grammar": "on / at / by", "listening": "Numbers / Time / Dates", "reading": "Email", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-07", "mode": "TOEIC Foundation", "target": 75, "grammar": "is / are / was / were", "listening": "Meetings & Schedules", "reading": "Schedule / Table", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-08", "mode": "TOEIC Foundation", "target": 75, "grammar": "Present vs. Past", "listening": "Factory instructions", "reading": "Workplace memo", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-09", "mode": "TOEIC Foundation", "target": 75, "grammar": "3rd-person -s", "listening": "Workplace sentences", "reading": "Short notice", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-10", "mode": "TOEIC Foundation", "target": 75, "grammar": "to + Verb", "listening": "Numbers / Time / Dates", "reading": "Email", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-11", "mode": "TOEIC Foundation", "target": 75, "grammar": "Active vs. Passive", "listening": "Meetings & Schedules", "reading": "Schedule / Table", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-12", "mode": "TOEIC Foundation", "target": 75, "grammar": "on / at / by", "listening": "Factory instructions", "reading": "Workplace memo", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-13", "mode": "TOEIC Foundation", "target": 75, "grammar": "is / are / was / were", "listening": "Workplace sentences", "reading": "Short notice", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-14", "mode": "TOEIC Foundation", "target": 75, "grammar": "Present vs. Past", "listening": "Numbers / Time / Dates", "reading": "Email", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-15", "mode": "TOEIC Foundation", "target": 75, "grammar": "3rd-person -s", "listening": "Meetings & Schedules", "reading": "Schedule / Table", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-16", "mode": "TOEIC Foundation", "target": 75, "grammar": "to + Verb", "listening": "Factory instructions", "reading": "Workplace memo", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-17", "mode": "TOEIC Foundation", "target": 75, "grammar": "Active vs. Passive", "listening": "Workplace sentences", "reading": "Short notice", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-18", "mode": "TOEIC Foundation", "target": 75, "grammar": "on / at / by", "listening": "Numbers / Time / Dates", "reading": "Email", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-19", "mode": "TOEIC Foundation", "target": 75, "grammar": "is / are / was / were", "listening": "Meetings & Schedules", "reading": "Schedule / Table", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-20", "mode": "TOEIC Foundation", "target": 75, "grammar": "Present vs. Past", "listening": "Factory instructions", "reading": "Workplace memo", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-21", "mode": "TOEIC Foundation", "target": 75, "grammar": "3rd-person -s", "listening": "Workplace sentences", "reading": "Short notice", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-22", "mode": "TOEIC Foundation", "target": 75, "grammar": "to + Verb", "listening": "Numbers / Time / Dates", "reading": "Email", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-23", "mode": "TOEIC Foundation", "target": 75, "grammar": "Active vs. Passive", "listening": "Meetings & Schedules", "reading": "Schedule / Table", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-24", "mode": "TOEIC Foundation", "target": 75, "grammar": "on / at / by", "listening": "Factory instructions", "reading": "Workplace memo", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-25", "mode": "TOEIC Foundation", "target": 75, "grammar": "is / are / was / were", "listening": "Workplace sentences", "reading": "Short notice", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-26", "mode": "TOEIC Foundation", "target": 75, "grammar": "Present vs. Past", "listening": "Numbers / Time / Dates", "reading": "Email", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-27", "mode": "TOEIC Foundation", "target": 75, "grammar": "3rd-person -s", "listening": "Meetings & Schedules", "reading": "Schedule / Table", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-28", "mode": "TOEIC Foundation", "target": 75, "grammar": "to + Verb", "listening": "Factory instructions", "reading": "Workplace memo", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-29", "mode": "TOEIC Foundation", "target": 75, "grammar": "Active vs. Passive", "listening": "Workplace sentences", "reading": "Short notice", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-09-30", "mode": "TOEIC Foundation", "target": 75, "grammar": "on / at / by", "listening": "Numbers / Time / Dates", "reading": "Email", "writing": "Write 3 simple work sentences", "speaking": "Speak for 60 seconds", "vocabulary": "10 TOEIC workplace words"}, {"date": "2026-10-01", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Passive review", "listening": "Mixed listening", "reading": "Matching information", "writing": "Task 2 ideas", "speaking": "Speaking Part 3", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-02", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Linking words", "listening": "Dictation + shadowing", "reading": "True / False / Not Given", "writing": "Task 2 paragraph", "speaking": "Record + self-review", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-03", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Sentence accuracy", "listening": "IELTS Section 1", "reading": "General notice", "writing": "Task 1 planning", "speaking": "Speaking Part 1", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-04", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Tense review", "listening": "IELTS Section 2", "reading": "Workplace text", "writing": "Task 1 short letter", "speaking": "Speaking Part 2", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-05", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Passive review", "listening": "Mixed listening", "reading": "Matching information", "writing": "Task 2 ideas", "speaking": "Speaking Part 3", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-06", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Linking words", "listening": "Dictation + shadowing", "reading": "True / False / Not Given", "writing": "Task 2 paragraph", "speaking": "Record + self-review", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-07", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Sentence accuracy", "listening": "IELTS Section 1", "reading": "General notice", "writing": "Task 1 planning", "speaking": "Speaking Part 1", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-08", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Tense review", "listening": "IELTS Section 2", "reading": "Workplace text", "writing": "Task 1 short letter", "speaking": "Speaking Part 2", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-09", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Passive review", "listening": "Mixed listening", "reading": "Matching information", "writing": "Task 2 ideas", "speaking": "Speaking Part 3", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-10", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Linking words", "listening": "Dictation + shadowing", "reading": "True / False / Not Given", "writing": "Task 2 paragraph", "speaking": "Record + self-review", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-11", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Sentence accuracy", "listening": "IELTS Section 1", "reading": "General notice", "writing": "Task 1 planning", "speaking": "Speaking Part 1", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-12", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Tense review", "listening": "IELTS Section 2", "reading": "Workplace text", "writing": "Task 1 short letter", "speaking": "Speaking Part 2", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-13", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Passive review", "listening": "Mixed listening", "reading": "Matching information", "writing": "Task 2 ideas", "speaking": "Speaking Part 3", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-14", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Linking words", "listening": "Dictation + shadowing", "reading": "True / False / Not Given", "writing": "Task 2 paragraph", "speaking": "Record + self-review", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-15", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Sentence accuracy", "listening": "IELTS Section 1", "reading": "General notice", "writing": "Task 1 planning", "speaking": "Speaking Part 1", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-16", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Tense review", "listening": "IELTS Section 2", "reading": "Workplace text", "writing": "Task 1 short letter", "speaking": "Speaking Part 2", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-17", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Passive review", "listening": "Mixed listening", "reading": "Matching information", "writing": "Task 2 ideas", "speaking": "Speaking Part 3", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-18", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Linking words", "listening": "Dictation + shadowing", "reading": "True / False / Not Given", "writing": "Task 2 paragraph", "speaking": "Record + self-review", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-19", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Sentence accuracy", "listening": "IELTS Section 1", "reading": "General notice", "writing": "Task 1 planning", "speaking": "Speaking Part 1", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-20", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Tense review", "listening": "IELTS Section 2", "reading": "Workplace text", "writing": "Task 1 short letter", "speaking": "Speaking Part 2", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-21", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Passive review", "listening": "Mixed listening", "reading": "Matching information", "writing": "Task 2 ideas", "speaking": "Speaking Part 3", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-22", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Linking words", "listening": "Dictation + shadowing", "reading": "True / False / Not Given", "writing": "Task 2 paragraph", "speaking": "Record + self-review", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-23", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Sentence accuracy", "listening": "IELTS Section 1", "reading": "General notice", "writing": "Task 1 planning", "speaking": "Speaking Part 1", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-24", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Tense review", "listening": "IELTS Section 2", "reading": "Workplace text", "writing": "Task 1 short letter", "speaking": "Speaking Part 2", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-25", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Passive review", "listening": "Mixed listening", "reading": "Matching information", "writing": "Task 2 ideas", "speaking": "Speaking Part 3", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-26", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Linking words", "listening": "Dictation + shadowing", "reading": "True / False / Not Given", "writing": "Task 2 paragraph", "speaking": "Record + self-review", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-27", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Sentence accuracy", "listening": "IELTS Section 1", "reading": "General notice", "writing": "Task 1 planning", "speaking": "Speaking Part 1", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-28", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Tense review", "listening": "IELTS Section 2", "reading": "Workplace text", "writing": "Task 1 short letter", "speaking": "Speaking Part 2", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-29", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Passive review", "listening": "Mixed listening", "reading": "Matching information", "writing": "Task 2 ideas", "speaking": "Speaking Part 3", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-30", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Linking words", "listening": "Dictation + shadowing", "reading": "True / False / Not Given", "writing": "Task 2 paragraph", "speaking": "Record + self-review", "vocabulary": "10 IELTS General words"}, {"date": "2026-10-31", "mode": "TOEIC → IELTS", "target": 90, "grammar": "Sentence accuracy", "listening": "IELTS Section 1", "reading": "General notice", "writing": "Task 1 planning", "speaking": "Speaking Part 1", "vocabulary": "10 IELTS General words"}, {"date": "2026-11-01", "mode": "IELTS CLB 7", "target": 95, "grammar": "Sentence variety", "listening": "Section 1–2 accuracy", "reading": "Section 1 speed", "writing": "Task 2 timed essay", "speaking": "Part 2 2-min talk", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-02", "mode": "IELTS CLB 7", "target": 95, "grammar": "Linking words", "listening": "Section 3–4 accuracy", "reading": "Section 2 workplace", "writing": "Rewrite corrected task", "speaking": "Part 3 reasons/examples", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-03", "mode": "IELTS CLB 7", "target": 95, "grammar": "Writing-feedback grammar", "listening": "Full listening review", "reading": "Section 3 long text", "writing": "Band 6 structure drill", "speaking": "Mock speaking", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-04", "mode": "IELTS CLB 7", "target": 95, "grammar": "Error-log repair", "listening": "Timed Listening set", "reading": "Timed General Reading", "writing": "Task 1 timed letter", "speaking": "Part 1 fluency", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-05", "mode": "IELTS CLB 7", "target": 95, "grammar": "Sentence variety", "listening": "Section 1–2 accuracy", "reading": "Section 1 speed", "writing": "Task 2 timed essay", "speaking": "Part 2 2-min talk", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-06", "mode": "IELTS CLB 7", "target": 95, "grammar": "Linking words", "listening": "Section 3–4 accuracy", "reading": "Section 2 workplace", "writing": "Rewrite corrected task", "speaking": "Part 3 reasons/examples", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-07", "mode": "IELTS CLB 7", "target": 95, "grammar": "Writing-feedback grammar", "listening": "Full listening review", "reading": "Section 3 long text", "writing": "Band 6 structure drill", "speaking": "Mock speaking", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-08", "mode": "IELTS CLB 7", "target": 95, "grammar": "Error-log repair", "listening": "Timed Listening set", "reading": "Timed General Reading", "writing": "Task 1 timed letter", "speaking": "Part 1 fluency", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-09", "mode": "IELTS CLB 7", "target": 95, "grammar": "Sentence variety", "listening": "Section 1–2 accuracy", "reading": "Section 1 speed", "writing": "Task 2 timed essay", "speaking": "Part 2 2-min talk", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-10", "mode": "IELTS CLB 7", "target": 95, "grammar": "Linking words", "listening": "Section 3–4 accuracy", "reading": "Section 2 workplace", "writing": "Rewrite corrected task", "speaking": "Part 3 reasons/examples", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-11", "mode": "IELTS CLB 7", "target": 95, "grammar": "Writing-feedback grammar", "listening": "Full listening review", "reading": "Section 3 long text", "writing": "Band 6 structure drill", "speaking": "Mock speaking", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-12", "mode": "IELTS CLB 7", "target": 95, "grammar": "Error-log repair", "listening": "Timed Listening set", "reading": "Timed General Reading", "writing": "Task 1 timed letter", "speaking": "Part 1 fluency", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-13", "mode": "IELTS CLB 7", "target": 95, "grammar": "Sentence variety", "listening": "Section 1–2 accuracy", "reading": "Section 1 speed", "writing": "Task 2 timed essay", "speaking": "Part 2 2-min talk", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-14", "mode": "IELTS CLB 7", "target": 95, "grammar": "Linking words", "listening": "Section 3–4 accuracy", "reading": "Section 2 workplace", "writing": "Rewrite corrected task", "speaking": "Part 3 reasons/examples", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-15", "mode": "IELTS CLB 7", "target": 95, "grammar": "Writing-feedback grammar", "listening": "Full listening review", "reading": "Section 3 long text", "writing": "Band 6 structure drill", "speaking": "Mock speaking", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-16", "mode": "IELTS CLB 7", "target": 95, "grammar": "Error-log repair", "listening": "Timed Listening set", "reading": "Timed General Reading", "writing": "Task 1 timed letter", "speaking": "Part 1 fluency", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-17", "mode": "IELTS CLB 7", "target": 95, "grammar": "Sentence variety", "listening": "Section 1–2 accuracy", "reading": "Section 1 speed", "writing": "Task 2 timed essay", "speaking": "Part 2 2-min talk", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-18", "mode": "IELTS CLB 7", "target": 95, "grammar": "Linking words", "listening": "Section 3–4 accuracy", "reading": "Section 2 workplace", "writing": "Rewrite corrected task", "speaking": "Part 3 reasons/examples", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-19", "mode": "IELTS CLB 7", "target": 95, "grammar": "Writing-feedback grammar", "listening": "Full listening review", "reading": "Section 3 long text", "writing": "Band 6 structure drill", "speaking": "Mock speaking", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-20", "mode": "IELTS CLB 7", "target": 95, "grammar": "Error-log repair", "listening": "Timed Listening set", "reading": "Timed General Reading", "writing": "Task 1 timed letter", "speaking": "Part 1 fluency", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-21", "mode": "IELTS CLB 7", "target": 95, "grammar": "Sentence variety", "listening": "Section 1–2 accuracy", "reading": "Section 1 speed", "writing": "Task 2 timed essay", "speaking": "Part 2 2-min talk", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-22", "mode": "IELTS CLB 7", "target": 95, "grammar": "Linking words", "listening": "Section 3–4 accuracy", "reading": "Section 2 workplace", "writing": "Rewrite corrected task", "speaking": "Part 3 reasons/examples", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-23", "mode": "IELTS CLB 7", "target": 95, "grammar": "Writing-feedback grammar", "listening": "Full listening review", "reading": "Section 3 long text", "writing": "Band 6 structure drill", "speaking": "Mock speaking", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-24", "mode": "IELTS CLB 7", "target": 95, "grammar": "Error-log repair", "listening": "Timed Listening set", "reading": "Timed General Reading", "writing": "Task 1 timed letter", "speaking": "Part 1 fluency", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-25", "mode": "IELTS CLB 7", "target": 95, "grammar": "Sentence variety", "listening": "Section 1–2 accuracy", "reading": "Section 1 speed", "writing": "Task 2 timed essay", "speaking": "Part 2 2-min talk", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-26", "mode": "IELTS CLB 7", "target": 95, "grammar": "Linking words", "listening": "Section 3–4 accuracy", "reading": "Section 2 workplace", "writing": "Rewrite corrected task", "speaking": "Part 3 reasons/examples", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-27", "mode": "IELTS CLB 7", "target": 95, "grammar": "Writing-feedback grammar", "listening": "Full listening review", "reading": "Section 3 long text", "writing": "Band 6 structure drill", "speaking": "Mock speaking", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-28", "mode": "IELTS CLB 7", "target": 95, "grammar": "Error-log repair", "listening": "Timed Listening set", "reading": "Timed General Reading", "writing": "Task 1 timed letter", "speaking": "Part 1 fluency", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-29", "mode": "IELTS CLB 7", "target": 95, "grammar": "Sentence variety", "listening": "Section 1–2 accuracy", "reading": "Section 1 speed", "writing": "Task 2 timed essay", "speaking": "Part 2 2-min talk", "vocabulary": "Error-log vocabulary"}, {"date": "2026-11-30", "mode": "IELTS CLB 7", "target": 95, "grammar": "Linking words", "listening": "Section 3–4 accuracy", "reading": "Section 2 workplace", "writing": "Rewrite corrected task", "speaking": "Part 3 reasons/examples", "vocabulary": "Error-log vocabulary"}];
+const KEY="ielts_v7";
+let state;
+try{ state=JSON.parse(localStorage.getItem(KEY)||'{"days":{},"scores":{}}'); }catch(e){ state={days:{},scores:{}}; }
+if(!state.days)state.days={}; if(!state.scores)state.scores={};
+const $=id=>document.getElementById(id);
+const keys=["grammar","listening","reading","writing","speaking","vocabulary"];
+const labels={grammar:"Grammar",listening:"Listening",reading:"Reading",writing:"Writing",speaking:"Speaking",vocabulary:"Vocabulary"};
+const icons={grammar:"Aa",listening:"🎧",reading:"📖",writing:"✍️",speaking:"🎤",vocabulary:"🧠"};
+let currentLesson={date:null,key:null};
+
+function gp(date){ return plans.find(p=>p.date===date)||plans[0]; }
+function cp(){ const t=new Date().toISOString().slice(0,10); if(t<plans[0].date)return plans[0]; if(t>plans[plans.length-1].date)return plans[plans.length-1]; return gp(t); }
+function getDay(date){ if(!state.days[date])state.days[date]={tasks:{},actual:0,catchup:0,note:""}; if(!state.days[date].tasks)state.days[date].tasks={}; return state.days[date]; }
+function save(){ localStorage.setItem(KEY,JSON.stringify(state)); }
+
+function openingBacklogFor(date){
+  let backlog=0;
+  for(const p of plans){
+    if(p.date>=date) break;
+    const x=state.days[p.date];
+    if(!x) continue;
+    const opening=backlog;
+    const applied=Math.min(Math.max(0,Number(x.catchup)||0), opening);
+    const gap=Math.max(0,p.target-(Number(x.actual)||0));
+    backlog=Math.max(0, opening-applied+gap);
+  }
+  return backlog;
 }
+
+function dayMetrics(date){
+  const p=gp(date), x=getDay(date);
+  const opening=openingBacklogFor(date);
+  const actual=Math.max(0,Number(x.actual)||0);
+  const requestedCatchup=Math.max(0,Number(x.catchup)||0);
+  const applied=Math.min(requestedCatchup,opening);
+  const gap=Math.max(0,p.target-actual);
+  const closing=Math.max(0,opening-applied+gap);
+  return {opening,actual,requestedCatchup,applied,gap,closing,target:p.target};
+}
+
+function taskRows(p){
+  const x=getDay(p.date);
+  return keys.map(k=>`<div class="task" data-date="${p.date}" data-key="${k}"><div class="ico">${icons[k]}</div><div><b>${labels[k]}</b><small>${p[k]}</small></div><div class="go">${x.tasks[k]?'✓':'›'}</div></div>`).join("");
+}
+
+function renderHome(){
+  const p=cp(),x=getDay(p.date),m=dayMetrics(p.date);
+  $("homeDate").textContent=p.date; $("homeMode").textContent=p.mode; $("tasks").innerHTML=taskRows(p);
+  $("actual").value=x.actual||""; $("catchup").value=x.catchup||"";
+  $("taskCount").textContent=keys.filter(k=>x.tasks[k]).length+"/6";
+  $("targetMin").textContent=m.target+"m"; $("openingBacklog").textContent=m.opening+"m";
+  $("todayGap").textContent=m.gap+"m"; $("appliedCatchup").textContent=m.applied+"m";
+  $("backlogNow").textContent=m.closing+"m";
+  $("catchupHint").textContent = m.opening===0
+    ? "目前沒有舊 Backlog。今天填入補課分鐘也不會抵扣今天剛產生的不足。"
+    : "今天最多可補回 "+m.opening+" 分鐘舊 Backlog；超過的部分不會多扣。";
+}
+
+function renderToday(date){ const p=gp(date),x=getDay(p.date); $("datePicker").value=p.date; $("todayTasks").innerHTML=taskRows(p); $("note").value=x.note||""; }
+function renderPlan(){ $("planList").innerHTML=plans.map(p=>{const m=dayMetrics(p.date);return `<div class="listitem"><b>${p.date}</b><br><small>${p.mode} • Target ${p.target}m • Closing Backlog ${m.closing}m</small></div>`}).join(""); }
+function renderScores(){ const t={Listening:[6,8],Reading:[6,7],Writing:[6,7],Speaking:[6,7]}; $("scores").innerHTML=Object.keys(t).map(k=>`<div class="score"><div><b>${k}</b><br><small>CLB7 ${t[k][0]} • CLB9 ${t[k][1]}</small></div><input id="sc-${k}" type="number" inputmode="decimal" step=".5" placeholder="6.0" value="${state.scores[k]||''}"></div>`).join(""); }
+
+function renderAll(){ updateStorageSummary();  renderHome(); renderToday($("datePicker").value||cp().date); renderPlan(); renderScores(); }
+
+function bindTasks(container){
+  container.onclick=e=>{ const t=e.target.closest(".task"); if(!t)return; const date=t.dataset.date,key=t.dataset.key,p=gp(date); currentLesson={date,key}; $("lessonTitle").textContent=labels[key]; $("lessonBody").textContent=p[key]; $("modal").classList.add("show"); };
+}
+bindTasks($("tasks")); bindTasks($("todayTasks"));
+
+$("completeTask").onclick=()=>{ if(!currentLesson.date)return; getDay(currentLesson.date).tasks[currentLesson.key]=true; save(); $("modal").classList.remove("show"); renderAll(); };
+$("close").onclick=()=>$("modal").classList.remove("show");
+$("modal").onclick=e=>{if(e.target===$("modal"))$("modal").classList.remove("show")};
+
+function previewMetrics(){
+  const p=cp(),x=getDay(p.date);
+  x.actual=Math.max(0,Number($("actual").value)||0);
+  x.catchup=Math.max(0,Number($("catchup").value)||0);
+  renderHome();
+}
+$("actual").oninput=previewMetrics; $("catchup").oninput=previewMetrics;
+
+$("saveToday").onclick=()=>{
+  const p=cp(),x=getDay(p.date),opening=openingBacklogFor(p.date);
+  x.actual=Math.max(0,Number($("actual").value)||0);
+  x.catchup=Math.min(Math.max(0,Number($("catchup").value)||0),opening);
+  save(); renderAll();
+  const m=dayMetrics(p.date);
+  alert("已儲存\n今日不足："+m.gap+" 分鐘\n實際補回："+m.applied+" 分鐘\n目前 Backlog："+m.closing+" 分鐘");
+};
+
+$("saveNote").onclick=()=>{ getDay($("datePicker").value).note=$("note").value; save(); alert("心得已儲存"); };
+$("saveScores").onclick=()=>{ ["Listening","Reading","Writing","Speaking"].forEach(k=>state.scores[k]=$("sc-"+k).value); save(); alert("CLB 分數已儲存"); };
+$("datePicker").onchange=e=>renderToday(e.target.value);
+
+
+function updateStorageSummary(){
+  const dayKeys=Object.keys(state.days||{});
+  const scoreKeys=Object.keys(state.scores||{}).filter(k=>state.scores[k]!=="" && state.scores[k]!==null && state.scores[k]!==undefined);
+  const totalMinutes=dayKeys.reduce((sum,date)=>sum+(Number(state.days[date].actual)||0),0);
+  const completedTasks=dayKeys.reduce((sum,date)=>{
+    const t=(state.days[date]&&state.days[date].tasks)||{};
+    return sum+Object.keys(t).filter(k=>t[k]).length;
+  },0);
+  const el=$("storageSummary");
+  if(el){
+    el.textContent="已記錄 "+dayKeys.length+" 天｜學習 "+totalMinutes+" 分鐘｜完成任務 "+completedTasks+" 項｜CLB 分數 "+scoreKeys.length+" 科";
+  }
+}
+
+function resetAllLocalData(){
+  const first=confirm("確定要清除目前所有測試資料嗎？\\n\\n會清除學習分鐘、Backlog、任務勾選、CLB 分數與心得。");
+  if(!first)return;
+  const second=confirm("最後確認：清除後無法復原。\\n91 天課表不會被刪除。\\n\\n要繼續嗎？");
+  if(!second)return;
+  state={days:{},scores:{}};
+  localStorage.removeItem(KEY);
+  save();
+  renderAll();
+  updateStorageSummary();
+  alert("測試資料已全部清除，現在可以從 0 正式開始。");
+}
+
+$("resetAllData").onclick=resetAllLocalData;
+document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{ document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active")); document.querySelectorAll(".view").forEach(x=>x.classList.remove("active")); b.classList.add("active"); $("view-"+b.dataset.v).classList.add("active"); });
+
+renderAll();
 })();
 </script>
 </body></html>
