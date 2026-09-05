@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vocab-flashcards-v4';
+const CACHE_NAME = 'vocab-flashcards-v5-tts-only-en-zh';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.webmanifest',

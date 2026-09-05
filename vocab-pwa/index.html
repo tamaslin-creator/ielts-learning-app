@@ -774,11 +774,10 @@ function toggleSort() {
 }
 
 // ---------- Text-to-speech ----------
-// Playback is intentionally limited to the English word and its Chinese
-// meaning only — no phonetics, part of speech, example sentences, or
-// numbering are ever spoken. sanitizeEnField/isPlaceholderZh guard against
-// bad source data (stray numbering, generic filler "meanings") even before
-// the user runs the cleanup tool below.
+// Playback is strictly limited to: English headword -> Chinese translation.
+// Never speak numbering, phonetics, POS labels, example sentences, or notes.
+// The sanitizers also protect against older malformed imports already stored
+// in localStorage.
 
 const PLACEHOLDER_ZH_TEXTS = [
   '常用詞彙；請結合右側搭配理解語意',
@@ -787,17 +786,52 @@ const PLACEHOLDER_ZH_TEXTS = [
 
 function sanitizeEnField(en) {
   if (!en) return '';
-  // Strip an accidental leading numbering like "0001. " or "12) "
-  return en.trim().replace(/^\d+[\.\)]\s*/, '');
+  let t = String(en).trim();
+  // Remove accidental numbering such as "0001. word", "12) word", or "12、word".
+  t = t.replace(/^\s*\d+\s*[\.\)\-、:]\s*/, '');
+  // If a whole imported row was accidentally stored in the English field,
+  // keep ONLY the English headword before any field separator.
+  t = t.split('｜')[0].split('|')[0].split('，')[0].split(',')[0].trim();
+  // Remove any leftover numbering one more time after splitting.
+  t = t.replace(/^\s*\d+\s*[\.\)\-、:]\s*/, '');
+  return t;
 }
 
 function isPlaceholderZh(zh) {
   if (!zh) return false;
-  const t = zh.trim();
+  const t = String(zh).trim();
   if (PLACEHOLDER_ZH_TEXTS.includes(t)) return true;
-  // A lone part-of-speech tag is not a real meaning either
-  if (/^(n\.\/v\.|adj\.|adv\.|n\.|v\.)$/.test(t)) return true;
+  // A lone part-of-speech tag is not a real meaning either.
+  if (/^(n\.\/v\.|adj\.|adv\.|n\.|v\.|prep\.|conj\.|pron\.|det\.|名詞|動詞|形容詞|副詞|介系詞|連接詞|代名詞|冠詞|專有名詞|來源未釋義)$/i.test(t)) return true;
   return false;
+}
+
+function sanitizeZhForTts(zh) {
+  if (!zh) return '';
+  let raw = String(zh).trim();
+  if (!raw || isPlaceholderZh(raw)) return '';
+
+  // Broken imports may put POS / examples / explanations into the Chinese field.
+  // Split common separators and select the first segment that looks like a real
+  // Chinese translation rather than a POS label or placeholder text.
+  const pieces = raw
+    .replace(/\r?\n/g, '｜')
+    .split(/｜|\||,|，/)
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  const posOnly = /^(n\.\/v\.|adj\.|adv\.|n\.|v\.|prep\.|conj\.|pron\.|det\.|名詞|動詞|形容詞|副詞|副詞性|介系詞|連接詞|代名詞|冠詞|助動詞|動名詞|專有名詞|來源未釋義)$/i;
+  const junk = /^(source entry|原始清單未提供|常用詞彙|進階常用詞)/i;
+
+  let candidate = pieces.find(s => /[\u3400-\u9fff]/.test(s) && !posOnly.test(s) && !junk.test(s));
+  if (!candidate) candidate = pieces.find(s => !posOnly.test(s) && !junk.test(s)) || '';
+
+  candidate = candidate
+    .replace(/^(中文意思|中文|意思|翻譯)\s*[：:]\s*/i, '')
+    .replace(/^(名詞|動詞|形容詞|副詞|介系詞|連接詞|代名詞|冠詞|助動詞|動名詞)\s*[：:、\-]?\s*/i, '')
+    .trim();
+
+  return isPlaceholderZh(candidate) ? '' : candidate;
 }
 
 function getVoicesByLangPrefix(prefix) {
@@ -849,7 +883,7 @@ function speakWord(word, onDone) {
   const enVoice = pickVoice('en-US', selectedEnVoiceURI);
   if (enVoice) enUtter.voice = enVoice;
 
-  const zhText = isPlaceholderZh(word.zh) ? '' : (word.zh || '').trim();
+  const zhText = sanitizeZhForTts(word.zh);
   let zhUtter = null;
   if (zhText) {
     zhUtter = new SpeechSynthesisUtterance(zhText);
