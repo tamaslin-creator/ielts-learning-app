@@ -504,6 +504,127 @@
     text-decoration: underline;
     padding: 4px;
   }
+
+  /* TTS controls */
+  .tts-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .tts-btn {
+    flex: 1;
+    padding: 13px 10px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: transform 0.1s ease, opacity 0.15s ease;
+  }
+
+  .tts-btn:active { transform: scale(0.97); }
+
+  .tts-btn-play {
+    background: var(--sage-bg);
+    color: var(--sage);
+  }
+
+  .tts-btn-pause {
+    background: #F4EEDD;
+    color: #A8863B;
+  }
+
+  .tts-btn-stop {
+    background: var(--rust-bg);
+    color: var(--rust);
+  }
+
+  .tts-btn:disabled {
+    opacity: 0.4;
+  }
+
+  .tts-status {
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin: -8px 0 16px;
+    min-height: 16px;
+  }
+
+  .tts-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(43, 42, 40, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 50;
+  }
+
+  .tts-modal {
+    background: var(--paper-raised);
+    border-radius: 14px;
+    padding: 22px;
+    max-width: 340px;
+    width: 100%;
+    box-shadow: 0 8px 30px rgba(43, 42, 40, 0.2);
+  }
+
+  .tts-modal h3 {
+    font-family: Georgia, serif;
+    font-weight: 400;
+    font-size: 18px;
+    margin: 0 0 6px;
+  }
+
+  .tts-modal p {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 0 0 18px;
+    line-height: 1.5;
+  }
+
+  .tts-modal-option {
+    width: 100%;
+    text-align: left;
+    padding: 13px 14px;
+    border-radius: 10px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    font-size: 14px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .tts-modal-option:last-child { margin-bottom: 0; }
+  .tts-modal-option:active { transform: scale(0.98); }
+
+  .tts-modal-option .opt-title {
+    font-weight: 600;
+  }
+
+  .tts-modal-option .opt-sub {
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  .tts-modal-cancel {
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-top: 14px;
+    background: none;
+    color: var(--ink-soft);
+    font-size: 13px;
+    padding: 6px;
+  }
 </style>
 </head>
 <body>
@@ -521,6 +642,13 @@ let importFormOpen = false;
 let loaded = false;
 let sortAlpha = false;
 let lastImportResult = null;
+
+// Text-to-speech state
+let ttsState = 'idle'; // 'idle' | 'playing' | 'paused'
+let ttsIndex = 0;
+let ttsStoppedIndex = null; // last word index where user pressed Stop
+let ttsShowResumeChoice = false;
+let ttsCurrentUtteranceWordId = null; // guards against stale onend callbacks after Stop
 
 const SEED_WORDS = [
   { id: 's1', en: 'diligent', phonetic: '/ˈdɪl.ɪ.dʒənt/', pos: '形容詞', zh: '勤奮的、勤勉的', exEn: 'She is a diligent student who always finishes her homework early.', exZh: '她是個勤奮的學生，總是提早完成作業。', status: 'new' },
@@ -574,7 +702,18 @@ function getOrderedWords() {
   return [...words].sort((a, b) => a.en.localeCompare(b.en, 'en', { sensitivity: 'base' }));
 }
 
+function stopTtsIfActive() {
+  if (ttsState === 'playing' || ttsState === 'paused') {
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    ttsCurrentUtteranceWordId = null;
+    ttsState = 'idle';
+    ttsStoppedIndex = null;
+  }
+  ttsShowResumeChoice = false;
+}
+
 function toggleSort() {
+  stopTtsIfActive();
   const ordered = getOrderedWords();
   const currentWord = ordered[currentIndex];
   sortAlpha = !sortAlpha;
@@ -584,6 +723,144 @@ function toggleSort() {
     currentIndex = newIdx >= 0 ? newIdx : 0;
   }
   isFlipped = false;
+  render();
+}
+
+// ---------- Text-to-speech ----------
+
+function pickVoice(lang) {
+  const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+  if (!voices.length) return null;
+  // Prefer a higher-quality/enhanced voice if the platform exposes one
+  const preferred = voices.find(v => v.lang === lang && /enhanced|premium|natural/i.test(v.name));
+  if (preferred) return preferred;
+  const exact = voices.find(v => v.lang === lang);
+  if (exact) return exact;
+  const loose = voices.find(v => v.lang && v.lang.startsWith(lang.split('-')[0]));
+  return loose || null;
+}
+
+function speakWord(word, onDone) {
+  if (!('speechSynthesis' in window)) {
+    onDone();
+    return;
+  }
+  const myWordId = word.id;
+  const enUtter = new SpeechSynthesisUtterance(word.en);
+  enUtter.lang = 'en-US';
+  enUtter.rate = 0.85;
+  const enVoice = pickVoice('en-US');
+  if (enVoice) enUtter.voice = enVoice;
+
+  const zhText = word.zh || '';
+  let zhUtter = null;
+  if (zhText) {
+    zhUtter = new SpeechSynthesisUtterance(zhText);
+    zhUtter.lang = 'zh-TW';
+    zhUtter.rate = 1;
+    const zhVoice = pickVoice('zh-TW');
+    if (zhVoice) zhUtter.voice = zhVoice;
+  }
+
+  enUtter.onend = () => {
+    if (ttsCurrentUtteranceWordId !== myWordId) return; // stopped/superseded
+    if (zhUtter) {
+      window.speechSynthesis.speak(zhUtter);
+    } else {
+      onDone();
+    }
+  };
+  if (zhUtter) {
+    zhUtter.onend = () => {
+      if (ttsCurrentUtteranceWordId !== myWordId) return;
+      onDone();
+    };
+  }
+  ttsCurrentUtteranceWordId = myWordId;
+  window.speechSynthesis.speak(enUtter);
+}
+
+function ttsSpeakCurrent() {
+  const ordered = getOrderedWords();
+  if (ordered.length === 0) {
+    ttsState = 'idle';
+    render();
+    return;
+  }
+  if (ttsIndex >= ordered.length) ttsIndex = 0;
+  currentIndex = ttsIndex;
+  isFlipped = false;
+  render();
+
+  const word = ordered[ttsIndex];
+  speakWord(word, () => {
+    if (ttsState !== 'playing') return; // paused or stopped mid-way
+    ttsIndex += 1;
+    const stillOrdered = getOrderedWords();
+    if (ttsIndex >= stillOrdered.length) {
+      // Reached the end of the deck
+      ttsState = 'idle';
+      ttsStoppedIndex = null;
+      ttsIndex = 0;
+      render();
+      return;
+    }
+    ttsSpeakCurrent();
+  });
+}
+
+function ttsBeginPlayback(startIndex) {
+  ttsIndex = startIndex;
+  ttsState = 'playing';
+  ttsShowResumeChoice = false;
+  ttsSpeakCurrent();
+}
+
+function ttsPlay() {
+  if (words.length === 0) return;
+  if (ttsState === 'paused') {
+    window.speechSynthesis.resume();
+    ttsState = 'playing';
+    render();
+    return;
+  }
+  if (ttsStoppedIndex !== null) {
+    ttsShowResumeChoice = true;
+    render();
+    return;
+  }
+  ttsBeginPlayback(currentIndex || 0);
+}
+
+function ttsChooseRestart() {
+  ttsBeginPlayback(0);
+}
+
+function ttsChooseContinue() {
+  const ordered = getOrderedWords();
+  const nextIdx = (ttsStoppedIndex + 1) % ordered.length;
+  ttsBeginPlayback(nextIdx);
+}
+
+function ttsCancelResumeChoice() {
+  ttsShowResumeChoice = false;
+  render();
+}
+
+function ttsPause() {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.pause();
+  ttsState = 'paused';
+  render();
+}
+
+function ttsStop() {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+  }
+  ttsCurrentUtteranceWordId = null;
+  ttsStoppedIndex = ttsIndex;
+  ttsState = 'idle';
   render();
 }
 
@@ -635,6 +912,7 @@ function toggleAddForm() {
 }
 
 function deleteWord(id) {
+  stopTtsIfActive();
   words = words.filter(w => w.id !== id);
   if (currentIndex >= words.length) currentIndex = Math.max(0, words.length - 1);
   isFlipped = false;
@@ -742,6 +1020,7 @@ function handleSave() {
 
 async function resetAll() {
   if (!confirm('確定要清空所有單字卡嗎？此動作無法復原。')) return;
+  stopTtsIfActive();
   words = [];
   currentIndex = 0;
   isFlipped = false;
@@ -808,6 +1087,21 @@ function render() {
         <span class="num">${stats.rate}%</span>
         <span class="label">答對率</span>
       </div>
+    </div>
+
+    <div class="tts-row">
+      ${ttsState === 'playing' ? `
+        <button class="tts-btn tts-btn-pause" onclick="ttsPause()">⏸ 暫停</button>
+        <button class="tts-btn tts-btn-stop" onclick="ttsStop()">⏹ 結束</button>
+      ` : ttsState === 'paused' ? `
+        <button class="tts-btn tts-btn-play" onclick="ttsPlay()">▶ 繼續</button>
+        <button class="tts-btn tts-btn-stop" onclick="ttsStop()">⏹ 結束</button>
+      ` : `
+        <button class="tts-btn tts-btn-play" onclick="ttsPlay()" ${words.length === 0 ? 'disabled' : ''}>▶ 播放朗讀</button>
+      `}
+    </div>
+    <div class="tts-status">
+      ${ttsState === 'playing' ? '朗讀中…會自動念出英文單字與中文意思' : ttsState === 'paused' ? '已暫停' : ''}
     </div>
 
     <div class="card-wrap">
@@ -911,6 +1205,24 @@ subsidiary,子公司"></textarea>
     <div class="reset-row">
       <button class="reset-link" onclick="resetAll()">清空所有單字卡</button>
     </div>
+
+    ${ttsShowResumeChoice ? `
+    <div class="tts-modal-backdrop" onclick="if(event.target===this) ttsCancelResumeChoice()">
+      <div class="tts-modal">
+        <h3>繼續朗讀？</h3>
+        <p>上次結束在「${escapeHtml((getOrderedWords()[ttsStoppedIndex] || {}).en || '')}」，要怎麼開始？</p>
+        <button class="tts-modal-option" onclick="ttsChooseRestart()">
+          <span class="opt-title">1. 從頭開始播放</span>
+          <span class="opt-sub">從單字庫第一個單字重新念起</span>
+        </button>
+        <button class="tts-modal-option" onclick="ttsChooseContinue()">
+          <span class="opt-title">2. 繼續下一個單字</span>
+          <span class="opt-sub">接著上次停止的地方繼續</span>
+        </button>
+        <button class="tts-modal-cancel" onclick="ttsCancelResumeChoice()">取消</button>
+      </div>
+    </div>
+    ` : ''}
   `;
 
   const cardEl = document.getElementById('flashcard');
@@ -920,6 +1232,14 @@ subsidiary,子公司"></textarea>
 }
 
 loadWords();
+
+if ('speechSynthesis' in window) {
+  // Safari/iOS populate the voice list asynchronously; warm it up early.
+  window.speechSynthesis.getVoices();
+  window.speechSynthesis.onvoiceschanged = () => {
+    window.speechSynthesis.getVoices();
+  };
+}
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
