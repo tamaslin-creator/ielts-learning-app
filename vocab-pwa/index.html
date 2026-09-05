@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>單字記憶卡</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#FAF9F6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="單字記憶卡">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  @font-face {
+    font-family: 'Charter';
+    src: local('Georgia');
+  }
+
+  * { box-sizing: border-box; }
+
+  :root {
+    --paper: #FAF9F6;
+    --paper-raised: #FFFFFF;
+    --ink: #2B2A28;
+    --ink-soft: #6B6862;
+    --sage: #7A8B6F;
+    --sage-bg: #EDF1E9;
+    --rust: #B5544A;
+    --rust-bg: #F7E9E7;
+    --line: #E4E0D8;
+    --shadow: rgba(43, 42, 40, 0.08);
+  }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, "Noto Sans TC", "PingFang TC", sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: calc(32px + env(safe-area-inset-top)) 16px calc(60px + env(safe-area-inset-bottom));
+  }
+
+  .app {
+    width: 100%;
+    max-width: 480px;
+  }
+
+  header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  h1 {
+    font-family: Georgia, 'Charter', serif;
+    font-size: 26px;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    margin: 0;
+  }
+
+  .counter {
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 10px;
+    margin: 18px 0 22px;
+  }
+
+  .stat {
+    flex: 1;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+
+  .stat .num {
+    font-family: Georgia, serif;
+    font-size: 20px;
+    display: block;
+    line-height: 1.2;
+  }
+
+  .stat .label {
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+    display: block;
+  }
+
+  .stat.mastered .num { color: var(--sage); }
+  .stat.review .num { color: var(--rust); }
+
+  /* Card */
+  .card-wrap {
+    perspective: 1200px;
+    margin-bottom: 18px;
+  }
+
+  .card {
+    position: relative;
+    width: 100%;
+    min-height: 260px;
+    transform-style: preserve-3d;
+    transition: transform 0.5s cubic-bezier(.4,.2,.2,1);
+    cursor: pointer;
+  }
+
+  .card.flipped {
+    transform: rotateY(180deg);
+  }
+
+  .face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: 0 2px 10px var(--shadow);
+    padding: 28px 26px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 14px;
+  }
+
+  .face.back {
+    transform: rotateY(180deg);
+    justify-content: flex-start;
+    padding-top: 34px;
+  }
+
+  .word-en {
+    font-family: Georgia, 'Charter', serif;
+    font-size: 34px;
+    line-height: 1.15;
+  }
+
+  .word-phonetic {
+    color: var(--ink-soft);
+    font-size: 14px;
+  }
+
+  .word-pos {
+    font-size: 12px;
+    color: var(--sage);
+    background: var(--sage-bg);
+    padding: 2px 10px;
+    border-radius: 20px;
+  }
+
+  .hint {
+    position: absolute;
+    bottom: 14px;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    opacity: 0.7;
+  }
+
+  .meaning {
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .example {
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1.5;
+    border-top: 1px solid var(--line);
+    padding-top: 12px;
+    width: 100%;
+  }
+
+  .example .en { font-style: italic; }
+  .example .zh { color: var(--ink-soft); margin-top: 4px; }
+
+  .empty-face {
+    color: var(--ink-soft);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 13px 10px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    transition: transform 0.1s ease, opacity 0.15s ease;
+  }
+
+  .btn:active { transform: scale(0.97); }
+
+  .btn-review {
+    background: var(--rust-bg);
+    color: var(--rust);
+  }
+
+  .btn-mastered {
+    background: var(--sage-bg);
+    color: var(--sage);
+  }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+
+  .nav-btn {
+    background: none;
+    color: var(--ink-soft);
+    font-size: 14px;
+    padding: 8px 4px;
+  }
+
+  .nav-btn:hover { color: var(--ink); }
+
+  .progress-track {
+    flex: 1;
+    height: 3px;
+    background: var(--line);
+    border-radius: 2px;
+    margin: 0 14px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--ink);
+    transition: width 0.3s ease;
+  }
+
+  /* Add word section */
+  .section-title {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 0 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .add-toggle {
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 13px;
+    padding: 7px 14px;
+    border-radius: 20px;
+  }
+
+  .toolbar {
+    display: flex;
+    gap: 8px;
+  }
+
+  .sort-toggle {
+    background: var(--paper-raised);
+    color: var(--ink-soft);
+    font-size: 13px;
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+  }
+
+  .sort-toggle.active {
+    background: var(--sage-bg);
+    color: var(--sage);
+    border-color: var(--sage-bg);
+  }
+
+  .import-toggle {
+    background: var(--paper-raised);
+    color: var(--ink);
+    font-size: 13px;
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+  }
+
+  .import-form {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 20px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .import-form.open { display: flex; }
+
+  .import-help {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+
+  .import-help code {
+    background: var(--line);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 11.5px;
+  }
+
+  .import-textarea {
+    min-height: 140px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 13px;
+  }
+
+  .import-summary {
+    font-size: 13px;
+    color: var(--sage);
+    background: var(--sage-bg);
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: none;
+  }
+
+  .import-summary.show { display: block; }
+
+  .import-skipped {
+    font-size: 12px;
+    color: var(--rust);
+    line-height: 1.5;
+  }
+
+  .add-form {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 20px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .add-form.open { display: flex; }
+
+  .field-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  label {
+    font-size: 12px;
+    color: var(--ink-soft);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .field { flex: 1; }
+
+  input, textarea {
+    width: 100%;
+    font-family: inherit;
+    font-size: 14px;
+    padding: 9px 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--ink-soft);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 40px;
+  }
+
+  .required-mark { color: var(--rust); }
+
+  .save-btn {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 11px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 4px;
+  }
+
+  .save-btn:disabled {
+    opacity: 0.4;
+  }
+
+  .error-msg {
+    font-size: 12.5px;
+    color: var(--rust);
+  }
+
+  /* Word list */
+  .list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 4px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+
+  .list-item:last-child { border-bottom: none; }
+
+  .list-word {
+    font-family: Georgia, serif;
+    font-size: 15px;
+  }
+
+  .list-meaning {
+    color: var(--ink-soft);
+    font-size: 13px;
+  }
+
+  .list-status {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .status-new { background: #ECEAE4; color: var(--ink-soft); }
+  .status-review { background: var(--rust-bg); color: var(--rust); }
+  .status-mastered { background: var(--sage-bg); color: var(--sage); }
+
+  .delete-x {
+    background: none;
+    color: var(--ink-soft);
+    font-size: 16px;
+    padding: 2px 6px;
+    line-height: 1;
+  }
+  .delete-x:hover { color: var(--rust); }
+
+  .list-left {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    overflow: hidden;
+  }
+  .list-left > div:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .loading {
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 13px;
+    padding: 40px 0;
+  }
+
+  .reset-row {
+    text-align: center;
+    margin-top: 30px;
+  }
+
+  .reset-link {
+    background: none;
+    color: var(--ink-soft);
+    font-size: 12px;
+    text-decoration: underline;
+    padding: 4px;
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="loading">載入中…</div>
+</div>
+
+<script>
+const STORAGE_KEY = 'vocab-cards';
+let words = [];
+let currentIndex = 0;
+let isFlipped = false;
+let addFormOpen = false;
+let importFormOpen = false;
+let loaded = false;
+let sortAlpha = false;
+let lastImportResult = null;
+
+const SEED_WORDS = [
+  { id: 's1', en: 'diligent', phonetic: '/ˈdɪl.ɪ.dʒənt/', pos: '形容詞', zh: '勤奮的、勤勉的', exEn: 'She is a diligent student who always finishes her homework early.', exZh: '她是個勤奮的學生，總是提早完成作業。', status: 'new' },
+  { id: 's2', en: 'subsidiary', phonetic: '/səbˈsɪd.i.er.i/', pos: '名詞', zh: '子公司、附屬機構', exEn: 'The firm opened a subsidiary in Taipei last year.', exZh: '這家公司去年在台北設立了子公司。', status: 'new' },
+  { id: 's3', en: 'itemize', phonetic: '/ˈaɪ.t̬ə.maɪz/', pos: '動詞', zh: '詳列項目、逐項列出', exEn: 'Please itemize each expense on the form.', exZh: '請在表格上逐項列出每筆費用。', status: 'new' }
+];
+
+async function loadWords() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    words = raw ? JSON.parse(raw) : SEED_WORDS;
+  } catch (e) {
+    words = SEED_WORDS;
+  }
+  loaded = true;
+  if (currentIndex >= words.length) currentIndex = Math.max(0, words.length - 1);
+  render();
+}
+
+async function saveWords() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(words));
+  } catch (e) {
+    console.error('Storage save failed', e);
+  }
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
+function statusLabel(status) {
+  if (status === 'mastered') return { text: '已記住', cls: 'status-mastered' };
+  if (status === 'review') return { text: '待複習', cls: 'status-review' };
+  return { text: '新單字', cls: 'status-new' };
+}
+
+function computeStats() {
+  const total = words.length;
+  const mastered = words.filter(w => w.status === 'mastered').length;
+  const review = words.filter(w => w.status === 'review').length;
+  const attempted = words.filter(w => w.status === 'mastered' || w.status === 'review').length;
+  const rate = attempted > 0 ? Math.round((mastered / attempted) * 100) : 0;
+  return { total, mastered, review, rate };
+}
+
+function getOrderedWords() {
+  if (!sortAlpha) return words;
+  return [...words].sort((a, b) => a.en.localeCompare(b.en, 'en', { sensitivity: 'base' }));
+}
+
+function toggleSort() {
+  const ordered = getOrderedWords();
+  const currentWord = ordered[currentIndex];
+  sortAlpha = !sortAlpha;
+  const newOrdered = getOrderedWords();
+  if (currentWord) {
+    const newIdx = newOrdered.findIndex(w => w.id === currentWord.id);
+    currentIndex = newIdx >= 0 ? newIdx : 0;
+  }
+  isFlipped = false;
+  render();
+}
+
+function toggleFlip() {
+  if (words.length === 0) return;
+  isFlipped = !isFlipped;
+  render();
+}
+
+function goPrev() {
+  if (words.length === 0) return;
+  currentIndex = (currentIndex - 1 + words.length) % words.length;
+  isFlipped = false;
+  render();
+}
+
+function goNext() {
+  if (words.length === 0) return;
+  currentIndex = (currentIndex + 1) % words.length;
+  isFlipped = false;
+  render();
+}
+
+function markStatus(status) {
+  const ordered = getOrderedWords();
+  const current = ordered[currentIndex];
+  if (!current) return;
+  const target = words.find(w => w.id === current.id);
+  if (target) target.status = status;
+  saveWords();
+  setTimeout(() => {
+    if (words.length > 1) {
+      goNext();
+    } else {
+      render();
+    }
+  }, 150);
+}
+
+function toggleAddForm() {
+  addFormOpen = !addFormOpen;
+  render();
+  if (addFormOpen) {
+    setTimeout(() => {
+      const el = document.getElementById('input-en');
+      if (el) el.focus();
+    }, 50);
+  }
+}
+
+function deleteWord(id) {
+  words = words.filter(w => w.id !== id);
+  if (currentIndex >= words.length) currentIndex = Math.max(0, words.length - 1);
+  isFlipped = false;
+  saveWords();
+  render();
+}
+
+function toggleImportForm() {
+  importFormOpen = !importFormOpen;
+  lastImportResult = null;
+  render();
+  if (importFormOpen) {
+    setTimeout(() => {
+      const el = document.getElementById('import-textarea');
+      if (el) el.focus();
+    }, 50);
+  }
+}
+
+// Parses lines of: english, phonetic, pos, chinese, example_en, example_zh
+// Only "english" and "chinese" (2nd field, or 2nd non-empty field if fewer columns) are required.
+// Accepts comma, Tab, or full-width comma as separator, one entry per line.
+function parseImportText(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  const added = [];
+  const skipped = [];
+
+  lines.forEach((line, idx) => {
+    // Split on comma/Tab/full-width comma, keeping empty fields (e.g. "word,,pos,zh")
+    const parts = line.split(/\t|,|，/).map(p => p.trim());
+    const en = parts[0] || '';
+    let phonetic = '', pos = '', zh = '', exEn = '', exZh = '';
+
+    if (parts.length === 2) {
+      // en, zh  (shorthand)
+      zh = parts[1];
+    } else if (parts.length >= 3) {
+      // Fixed column order: en, phonetic, pos, zh, exEn, exZh
+      // Any trailing columns beyond 6 are ignored; missing ones are blank.
+      phonetic = parts[1] || '';
+      pos = parts[2] || '';
+      zh = parts[3] || '';
+      exEn = parts[4] || '';
+      exZh = parts[5] || '';
+    }
+
+    if (!en || !zh) {
+      skipped.push({ line: idx + 1, text: line });
+      return;
+    }
+
+    added.push({
+      id: 'w' + Date.now() + '-' + idx,
+      en, phonetic, pos, zh, exEn, exZh,
+      status: 'new'
+    });
+  });
+
+  return { added, skipped };
+}
+
+function handleImport() {
+  const text = document.getElementById('import-textarea').value;
+  const { added, skipped } = parseImportText(text);
+
+  if (added.length > 0) {
+    words = words.concat(added);
+    saveWords();
+  }
+
+  lastImportResult = { addedCount: added.length, skipped };
+  if (added.length > 0) {
+    document.getElementById('import-textarea').value = '';
+  }
+  render();
+}
+
+function handleSave() {
+  const en = document.getElementById('input-en').value.trim();
+  const zh = document.getElementById('input-zh').value.trim();
+  const phonetic = document.getElementById('input-phonetic').value.trim();
+  const pos = document.getElementById('input-pos').value.trim();
+  const exEn = document.getElementById('input-exen').value.trim();
+  const exZh = document.getElementById('input-exzh').value.trim();
+  const errorEl = document.getElementById('form-error');
+
+  if (!en || !zh) {
+    errorEl.textContent = '英文單字和中文意思是必填的';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  const newWord = {
+    id: 'w' + Date.now(),
+    en, zh, phonetic, pos, exEn, exZh,
+    status: 'new'
+  };
+  words.push(newWord);
+  currentIndex = words.length - 1;
+  isFlipped = false;
+  addFormOpen = false;
+  saveWords();
+  render();
+}
+
+async function resetAll() {
+  if (!confirm('確定要清空所有單字卡嗎？此動作無法復原。')) return;
+  words = [];
+  currentIndex = 0;
+  isFlipped = false;
+  await saveWords();
+  render();
+}
+
+function render() {
+  const app = document.getElementById('app');
+  if (!loaded) {
+    app.innerHTML = '<div class="loading">載入中…</div>';
+    return;
+  }
+
+  const stats = computeStats();
+  const ordered = getOrderedWords();
+  const current = ordered[currentIndex];
+  const progressPct = words.length > 0 ? ((currentIndex + 1) / words.length) * 100 : 0;
+
+  let cardFaceHtml;
+  if (!current) {
+    cardFaceHtml = `
+      <div class="face">
+        <div class="empty-face">還沒有任何單字卡。<br>點選下方「新增單字」開始建立你的單字庫。</div>
+      </div>
+      <div class="face back"></div>
+    `;
+  } else {
+    cardFaceHtml = `
+      <div class="face">
+        <div class="word-en">${escapeHtml(current.en)}</div>
+        ${current.phonetic ? `<div class="word-phonetic">${escapeHtml(current.phonetic)}</div>` : ''}
+        ${current.pos ? `<div class="word-pos">${escapeHtml(current.pos)}</div>` : ''}
+        <div class="hint">點卡片看意思</div>
+      </div>
+      <div class="face back">
+        <div class="meaning">${escapeHtml(current.zh)}</div>
+        ${current.exEn ? `
+        <div class="example">
+          <div class="en">${escapeHtml(current.exEn)}</div>
+          ${current.exZh ? `<div class="zh">${escapeHtml(current.exZh)}</div>` : ''}
+        </div>` : ''}
+        <div class="hint">再點一下翻回正面</div>
+      </div>
+    `;
+  }
+
+  app.innerHTML = `
+    <header>
+      <h1>單字記憶卡</h1>
+      <div class="counter">${words.length > 0 ? (currentIndex + 1) + ' / ' + words.length : '0 / 0'}</div>
+    </header>
+
+    <div class="stats-row">
+      <div class="stat">
+        <span class="num">${stats.total}</span>
+        <span class="label">單字庫共</span>
+      </div>
+      <div class="stat review">
+        <span class="num">${stats.review}</span>
+        <span class="label">再複習</span>
+      </div>
+      <div class="stat mastered">
+        <span class="num">${stats.rate}%</span>
+        <span class="label">答對率</span>
+      </div>
+    </div>
+
+    <div class="card-wrap">
+      <div class="card ${isFlipped ? 'flipped' : ''}" id="flashcard">
+        ${cardFaceHtml}
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-review" onclick="markStatus('review')" ${!current ? 'disabled' : ''}>需要複習</button>
+      <button class="btn btn-mastered" onclick="markStatus('mastered')" ${!current ? 'disabled' : ''}>已經記住</button>
+    </div>
+
+    <div class="nav-row">
+      <button class="nav-btn" onclick="goPrev()" ${words.length < 2 ? 'disabled' : ''}>← 上一個</button>
+      <div class="progress-track"><div class="progress-fill" style="width:${progressPct}%"></div></div>
+      <button class="nav-btn" onclick="goNext()" ${words.length < 2 ? 'disabled' : ''}>下一個 →</button>
+    </div>
+
+    <div class="section-title">
+      <span>單字庫（共 ${words.length} 個）</span>
+      <div class="toolbar">
+        <button class="sort-toggle ${sortAlpha ? 'active' : ''}" onclick="toggleSort()">${sortAlpha ? '✓ A–Z' : 'A–Z 排序'}</button>
+        <button class="import-toggle" onclick="toggleImportForm()">${importFormOpen ? '取消' : '大量匯入'}</button>
+        <button class="add-toggle" onclick="toggleAddForm()">${addFormOpen ? '取消' : '+ 新增單字'}</button>
+      </div>
+    </div>
+
+    <div class="import-form ${importFormOpen ? 'open' : ''}">
+      <div class="import-help">
+        每行一個單字，用逗號分隔，欄位順序固定：<br>
+        <code>英文,音標,詞性,中文意思,例句,例句翻譯</code><br>
+        音標、詞性、例句可留空但要保留逗號位置（例如 <code>word,,詞性,意思</code>）。英文和中文意思為必填。也可只用<code>英文,中文意思</code>兩欄簡寫。
+      </div>
+      <textarea id="import-textarea" class="import-textarea" placeholder="itemize,/ˈaɪ.t̬ə.maɪz/,動詞,詳列項目,Please itemize each expense.,請逐項列出每筆費用。
+diligent,,形容詞,勤奮的
+subsidiary,子公司"></textarea>
+      ${lastImportResult ? `
+        <div class="import-summary show">成功匯入 ${lastImportResult.addedCount} 個單字${lastImportResult.skipped.length > 0 ? '，' + lastImportResult.skipped.length + ' 行略過' : ''}</div>
+        ${lastImportResult.skipped.length > 0 ? `
+          <div class="import-skipped">
+            略過的行（缺少英文或中文欄位）：<br>
+            ${lastImportResult.skipped.map(s => `第 ${s.line} 行：${escapeHtml(s.text)}`).join('<br>')}
+          </div>
+        ` : ''}
+      ` : ''}
+      <button class="save-btn" onclick="handleImport()">匯入單字</button>
+    </div>
+
+    <div class="add-form ${addFormOpen ? 'open' : ''}">
+      <div class="field-row">
+        <div class="field">
+          <label>英文單字 <span class="required-mark">*</span></label>
+          <input id="input-en" type="text" placeholder="例如：itemize">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>音標（選填）</label>
+          <input id="input-phonetic" type="text" placeholder="/ˈaɪ.t̬ə.maɪz/">
+        </div>
+        <div class="field">
+          <label>詞性（選填）</label>
+          <input id="input-pos" type="text" placeholder="動詞">
+        </div>
+      </div>
+      <div class="field">
+        <label>中文意思 <span class="required-mark">*</span></label>
+        <input id="input-zh" type="text" placeholder="例如：詳列項目">
+      </div>
+      <div class="field">
+        <label>例句（選填）</label>
+        <textarea id="input-exen" placeholder="Please itemize each expense on the form."></textarea>
+      </div>
+      <div class="field">
+        <label>例句翻譯（中文，選填）</label>
+        <textarea id="input-exzh" placeholder="請在表格上逐項列出每筆費用。"></textarea>
+      </div>
+      <div class="error-msg" id="form-error" style="display:none;"></div>
+      <button class="save-btn" onclick="handleSave()">儲存單字</button>
+    </div>
+
+    ${words.length > 0 ? `
+    <div class="word-list">
+      ${ordered.map(w => {
+        const s = statusLabel(w.status);
+        return `
+        <div class="list-item">
+          <div class="list-left">
+            <div><span class="list-word">${escapeHtml(w.en)}</span> <span class="list-meaning">${escapeHtml(w.zh)}</span></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="list-status ${s.cls}">${s.text}</span>
+            <button class="delete-x" onclick="deleteWord('${w.id}')" title="刪除">×</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    ` : ''}
+
+    <div class="reset-row">
+      <button class="reset-link" onclick="resetAll()">清空所有單字卡</button>
+    </div>
+  `;
+
+  const cardEl = document.getElementById('flashcard');
+  if (cardEl) {
+    cardEl.addEventListener('click', toggleFlip);
+  }
+}
+
+loadWords();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch(err => {
+      console.error('Service worker registration failed', err);
+    });
+  });
+}
+</script>
+</body>
+</html>
