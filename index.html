@@ -49,7 +49,12 @@ label{display:block;font-size:13px;margin:12px 0 6px} textarea{min-height:90px}
 .close{width:38px;height:38px;border:0;border-radius:50%;font-size:22px;background:#f1f5f9}
 .notice{padding:10px 12px;border-radius:12px;background:#fff7ed;color:#9a3412;font-size:13px;line-height:1.5;margin-top:10px}
 </style>
-</head>
+<style>
+#grammarV11{display:none}.gcard{background:#fff;border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 8px 24px #00000012}
+.gstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.gstat{background:#f8fafc;padding:10px;border-radius:12px;text-align:center}
+.gq{font-size:18px;font-weight:700;line-height:1.55;margin:16px 0}.gopts{display:grid;gap:10px}.gopt{padding:13px;border:1px solid #dbe2ea;background:#fff;border-radius:12px;text-align:left;font-size:16px}
+.gopt.ok{background:#f0fdf4;border-color:#16a34a}.gopt.bad{background:#fef2f2;border-color:#dc2626}.gfb{margin-top:12px;padding:12px;background:#f8fafc;border-radius:12px;line-height:1.5}
+</style></head>
 <body>
 <header><h1>IELTS Learning</h1><p>TOEIC 基礎 → IELTS General CLB 7 → CLB 9</p></header>
 <main>
@@ -398,4 +403,31 @@ document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{ document.que
 renderAll();
 })();
 </script>
-</body></html>
+<section id="grammarV11"><div class="gcard"><h2>📘 Grammar Training V11</h2><p class="hint">A2 → B1｜工作英文＋IELTS 基礎｜自動記錄正確率與錯題</p>
+<div class="gstats"><div class="gstat">本次題數<br><b id="gd">0</b></div><div class="gstat">答對<br><b id="gc">0</b></div><div class="gstat">正確率<br><b id="ga">0%</b></div></div>
+<div class="gq" id="gq"></div><div class="gopts" id="go"></div><div class="gfb" id="gf">請選擇答案。</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn" id="gn">下一題</button><button class="btn ghost" id="gr">錯題重練</button><button class="btn ghost" id="gb">返回</button></div></div></section><script>
+(()=>{const Q=[
+["The project manager ___ attend the customer meeting today.",["have to","has to","had to","must to"],1,"manager 是單數；現在義務用 has to。"],
+["Yesterday, the engineers ___ stop production.",["have to","has to","had to","will have to"],2,"Yesterday → 過去 → had to。"],
+["Next week, we ___ visit the customer factory.",["had to","will have to","has to","must to"],1,"Next week → 未來 → will have to。"],
+["Tomorrow is a holiday, so employees ___ come to work.",["must not","won't have to","didn't have to","has to"],1,"未來『不必』= won't have to。"],
+["Photography is prohibited. Visitors ___ take photos.",["don't have to","must not","had to","should"],1,"prohibited = 禁止 → must not。"],
+["The engineers must ___ the machine.",["inspect","be inspected","inspected","be inspect"],0,"工程師做檢查：主動 must + V。"],
+["The machine must ___ before shipment.",["inspect","be inspected","inspected","be inspect"],1,"機器被檢查：must + be + Vpp。"],
+["Last Friday, the engineer ___ inspect the machine, and problems ___ be fixed.",["has to / must","had to / had to","had to / had to be","have to / has to"],1,"Last Friday → had to；第二格已有 be fixed。"],
+["Since the customer has approved the design, each engineer ___ follow it.",["have to","has to","had to","will have to"],1,"each engineer 單數；has approved 的結果影響現在。"],
+["All defective parts ___ be replaced.",["has to","have to","had to be","must to"],1,"parts 複數 → have to be replaced。"],
+["The meeting starts ___ 9:00, so arrive ___ 8:45.",["by / at","at / by","on / at","at / on"],1,"at = 時間點；by = 最晚以前。"],
+["The team needs ___ the report by Friday.",["finish","finishes","to finish","finished"],2,"need + to + 原形動詞。"]
+];let i=0,d=0,c=0,w=[];const E=x=>document.getElementById(x);
+try{let s=JSON.parse(localStorage.getItem("ielts_v11_grammar")||"{}");d=s.d||0;c=s.c||0;w=s.w||[]}catch(e){}
+function sv(){localStorage.setItem("ielts_v11_grammar",JSON.stringify({d,c,w}))}
+function st(){E("gd").textContent=d;E("gc").textContent=c;E("ga").textContent=d?Math.round(c/d*100)+"%":"0%"}
+function rd(){let x=Q[i%Q.length];E("gq").textContent=(i%Q.length+1)+". "+x[0];E("go").innerHTML=x[1].map((v,j)=>`<button class="gopt" data-j="${j}">${String.fromCharCode(65+j)}. ${v}</button>`).join("");E("gf").textContent="請選擇答案。";E("go").querySelectorAll("button").forEach(b=>b.onclick=()=>ans(+b.dataset.j));st()}
+function ans(j){let x=Q[i%Q.length],bs=[...E("go").querySelectorAll("button")];if(bs.some(b=>b.disabled))return;bs.forEach(b=>b.disabled=true);d++;if(j===x[2]){c++;bs[j].classList.add("ok");E("gf").textContent="✅ 正確！ "+x[3]}else{bs[j].classList.add("bad");bs[x[2]].classList.add("ok");w.push(i%Q.length);E("gf").textContent="❌ 正確答案："+String.fromCharCode(65+x[2])+"。"+x[3]}sv();st()}
+function openG(){document.querySelectorAll(".view").forEach(v=>v.style.display="none");E("grammarV11").style.display="block";rd();scrollTo(0,0)}
+function add(){let t=E("tasks")||E("todayTasks");if(!t||E("openGV11"))return;let b=document.createElement("button");b.id="openGV11";b.className="btn";b.style.cssText="width:100%;margin:12px 0";b.textContent="📘 開始 Grammar 練習（V11）";b.onclick=openG;t.parentNode.insertBefore(b,t.nextSibling)}
+E("gn").onclick=()=>{i=(i+1)%Q.length;rd()};E("gr").onclick=()=>{if(!w.length){E("gf").textContent="目前沒有錯題。";return}i=w.shift();sv();rd()};E("gb").onclick=()=>{E("grammarV11").style.display="none";let h=E("view-home")||document.querySelector(".view");if(h)h.style.display="block"};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",add);else add()
+})();
+</script></body></html>
