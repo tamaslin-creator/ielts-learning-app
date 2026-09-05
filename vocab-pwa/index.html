@@ -554,6 +554,50 @@
     min-height: 16px;
   }
 
+  .tts-settings-toggle {
+    display: block;
+    margin: -8px auto 16px;
+    background: none;
+    color: var(--ink-soft);
+    font-size: 12px;
+    text-decoration: underline;
+    padding: 4px;
+  }
+
+  .tts-settings-panel {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 18px;
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .tts-settings-panel.open { display: flex; }
+
+  .tts-settings-panel select {
+    width: 100%;
+    font-family: inherit;
+    font-size: 13px;
+    padding: 9px 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  .tts-settings-panel .tip {
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+
   .tts-modal-backdrop {
     position: fixed;
     inset: 0;
@@ -649,6 +693,9 @@ let ttsIndex = 0;
 let ttsStoppedIndex = null; // last word index where user pressed Stop
 let ttsShowResumeChoice = false;
 let ttsCurrentUtteranceWordId = null; // guards against stale onend callbacks after Stop
+let ttsSettingsOpen = false;
+let selectedEnVoiceURI = localStorage.getItem('vocab-tts-en-voice') || '';
+let selectedZhVoiceURI = localStorage.getItem('vocab-tts-zh-voice') || '';
 
 const SEED_WORDS = [
   { id: 's1', en: 'diligent', phonetic: '/ˈdɪl.ɪ.dʒənt/', pos: '形容詞', zh: '勤奮的、勤勉的', exEn: 'She is a diligent student who always finishes her homework early.', exZh: '她是個勤奮的學生，總是提早完成作業。', status: 'new' },
@@ -727,17 +774,44 @@ function toggleSort() {
 }
 
 // ---------- Text-to-speech ----------
+// Playback is intentionally limited to the English word and its Chinese
+// meaning only — no phonetics, part of speech, example sentences, or
+// numbering are ever spoken.
 
-function pickVoice(lang) {
+function getVoicesByLangPrefix(prefix) {
+  const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+  return voices.filter(v => v.lang && v.lang.toLowerCase().startsWith(prefix));
+}
+
+function pickVoice(lang, selectedURI) {
   const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
   if (!voices.length) return null;
+  if (selectedURI) {
+    const chosen = voices.find(v => v.voiceURI === selectedURI);
+    if (chosen) return chosen;
+  }
   // Prefer a higher-quality/enhanced voice if the platform exposes one
-  const preferred = voices.find(v => v.lang === lang && /enhanced|premium|natural/i.test(v.name));
+  const preferred = voices.find(v => v.lang === lang && /enhanced|premium|natural|siri/i.test(v.name));
   if (preferred) return preferred;
   const exact = voices.find(v => v.lang === lang);
   if (exact) return exact;
   const loose = voices.find(v => v.lang && v.lang.startsWith(lang.split('-')[0]));
   return loose || null;
+}
+
+function onVoiceChange(kind, value) {
+  if (kind === 'en') {
+    selectedEnVoiceURI = value;
+    localStorage.setItem('vocab-tts-en-voice', value);
+  } else {
+    selectedZhVoiceURI = value;
+    localStorage.setItem('vocab-tts-zh-voice', value);
+  }
+}
+
+function toggleTtsSettings() {
+  ttsSettingsOpen = !ttsSettingsOpen;
+  render();
 }
 
 function speakWord(word, onDone) {
@@ -749,7 +823,7 @@ function speakWord(word, onDone) {
   const enUtter = new SpeechSynthesisUtterance(word.en);
   enUtter.lang = 'en-US';
   enUtter.rate = 0.85;
-  const enVoice = pickVoice('en-US');
+  const enVoice = pickVoice('en-US', selectedEnVoiceURI);
   if (enVoice) enUtter.voice = enVoice;
 
   const zhText = word.zh || '';
@@ -757,8 +831,8 @@ function speakWord(word, onDone) {
   if (zhText) {
     zhUtter = new SpeechSynthesisUtterance(zhText);
     zhUtter.lang = 'zh-TW';
-    zhUtter.rate = 1;
-    const zhVoice = pickVoice('zh-TW');
+    zhUtter.rate = 0.95;
+    const zhVoice = pickVoice('zh-TW', selectedZhVoiceURI);
     if (zhVoice) zhUtter.voice = zhVoice;
   }
 
@@ -1039,6 +1113,8 @@ function render() {
   const ordered = getOrderedWords();
   const current = ordered[currentIndex];
   const progressPct = words.length > 0 ? ((currentIndex + 1) / words.length) * 100 : 0;
+  const enVoices = getVoicesByLangPrefix('en');
+  const zhVoices = getVoicesByLangPrefix('zh');
 
   let cardFaceHtml;
   if (!current) {
@@ -1101,7 +1177,29 @@ function render() {
       `}
     </div>
     <div class="tts-status">
-      ${ttsState === 'playing' ? '朗讀中…會自動念出英文單字與中文意思' : ttsState === 'paused' ? '已暫停' : ''}
+      ${ttsState === 'playing' ? '朗讀中…只念英文單字與中文意思' : ttsState === 'paused' ? '已暫停' : ''}
+    </div>
+
+    <button class="tts-settings-toggle" onclick="toggleTtsSettings()">${ttsSettingsOpen ? '收合語音設定' : '語音設定（選擇朗讀聲音）'}</button>
+
+    <div class="tts-settings-panel ${ttsSettingsOpen ? 'open' : ''}">
+      <div>
+        <label>英文語音</label>
+        <select onchange="onVoiceChange('en', this.value)">
+          <option value="">系統預設</option>
+          ${enVoices.map(v => `<option value="${escapeHtml(v.voiceURI)}" ${v.voiceURI === selectedEnVoiceURI ? 'selected' : ''}>${escapeHtml(v.name)}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label>中文語音</label>
+        <select onchange="onVoiceChange('zh', this.value)">
+          <option value="">系統預設</option>
+          ${zhVoices.map(v => `<option value="${escapeHtml(v.voiceURI)}" ${v.voiceURI === selectedZhVoiceURI ? 'selected' : ''}>${escapeHtml(v.name)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="tip">
+        想要更自然的中文發音？到 iPhone「設定」→「輔助使用」→「朗讀內容」→「聲音」，選「中文（台灣）」下載加強版語音，下載完成後回到這裡重新整理，清單就會出現更好的選項。
+      </div>
     </div>
 
     <div class="card-wrap">
@@ -1238,6 +1336,7 @@ if ('speechSynthesis' in window) {
   window.speechSynthesis.getVoices();
   window.speechSynthesis.onvoiceschanged = () => {
     window.speechSynthesis.getVoices();
+    if (loaded) render();
   };
 }
 
